@@ -100,3 +100,21 @@ published in it's activity stream.
     
     gnip.publish(my_publisher, 
                  [Gnip::Activity.new('joe', 'post', Time.now, 'http://mydomain.com/joe/my-new-blog-post')])
+
+
+== Contributing
+
+Contributions to this library are welcome.
+
+Source         :: git://github.com/gnip/gnip-ruby.git
+Community Site :: {gnip-community}[http://groups.google.com/group/gnip-community]
+Mailing List   :: gnip-community@googlegroups.com
+
+To get started create a clone of the main repository,
+<git://github.com/gnip/gnip-ruby.git>, and start improving it.  Feel
+discuss any changes you are making on the mailing list to get feed
+back from the other users.  Once you are ready to publish your changes
+you can send them to the mailing list or, if you are using GitHub,
+send a pull request to the owner of the main repositiory.
+
+
