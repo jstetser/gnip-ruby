@@ -25,7 +25,7 @@ class Gnip::Activity
     result['uid'] = @uid
     result['type'] = @type
     result['guid'] = @guid if @guid
-    result['publisher.name'] = @guid if @publisher
+    result['publisher.name'] = @publisher if @publisher
     {'activity' => result }
   end
 
