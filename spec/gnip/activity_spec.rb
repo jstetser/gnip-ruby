@@ -32,9 +32,11 @@ describe Gnip::Activity do
     activity.at.should == now.xmlschema
     activity.uid.should == 'bob'
     activity.type.should == 'type'
+    activity.guid.should be_nil
+    activity.publisher.should be_nil
   end
 
-   it 'should unmarshal from xml correctly with guid' do
+   it "should unmarshal from xml correctly with guid" do
     now = Time.now
     activity_xml =  "<activity at=\"#{now.xmlschema}\" uid=\"bob\" type=\"type\" guid=\"guid\" />"
     activity = Gnip::Activity.from_xml(activity_xml)
@@ -42,9 +44,10 @@ describe Gnip::Activity do
     activity.uid.should == 'bob'
     activity.type.should == 'type'
     activity.guid.should == 'guid'
+    activity.publisher.should be_nil
    end
 
-   it 'should unmarshal from xml correctly with publisher' do
+   it "should unmarshal from xml correctly with publisher" do
     now = Time.now
     activity_xml =  "<activity at=\"#{now.xmlschema}\" uid=\"bob\" type=\"type\" guid=\"guid\" publisher.name=\"publisher\"/>"
     activity = Gnip::Activity.from_xml(activity_xml)
