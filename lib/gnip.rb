@@ -1,4 +1,4 @@
- require 'base64'
+require 'base64'
 require 'xmlsimple'
 require 'net/http'
 require 'net/https'
@@ -11,14 +11,6 @@ module Gnip
 
   def self.header_xml
     '<?xml version="1.0" encoding="UTF-8"?>'
-  end
-
-  def self.five_minute_floor(time)
-    Time.at((time.to_f / 300.0).floor * 300.0)
-  end
-
-  def self.formatted_time(time)
-    time.utc.strftime('%Y%m%d%H%M')
   end
 
   class Gnip::Base

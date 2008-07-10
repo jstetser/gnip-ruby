@@ -1,3 +1,6 @@
+require 'pathname'
+require Pathname(__FILE__).dirname + '../ext/time'
+
 class Gnip::Connection < Gnip::Base
   include Gnip
 
@@ -32,7 +35,7 @@ class Gnip::Connection < Gnip::Base
   # Resource is a publisher or collection resource
   # Time is the time object. If nil, then the server returns the current bucket
   def activities_stream_xml(resource, time = nil)
-    timestamp = self.get_timestamp(time)
+    timestamp = time ? time.to_gnip_bucket_id : 'current'
     @gnip_config.logger.info("Timestamp for #{time} is #{timestamp}")
     @gnip_config.logger.info("Getting activities xml for #{resource.name} at #{timestamp}")
     get("/#{resource.uri}/#{resource.name}/activity/#{timestamp}.xml")
@@ -42,7 +45,7 @@ class Gnip::Connection < Gnip::Base
   # Resource is a publisher or collection resource
   # Time is the time object. If nil, then the server returns the current bucket
   def activities_stream(resource, time = nil)
-    timestamp = Gnip::Connection.get_timestamp(time)
+    timestamp = time ? time.to_gnip_bucket_id : 'current'
     @gnip_config.logger.info("Timestamp for #{time} is #{timestamp}")
     @gnip_config.logger.info("Getting activities for #{resource.name} at #{timestamp}")
     response, activities_xml = get("/#{resource.uri}/#{resource.name}/activity/#{timestamp}.xml")
@@ -129,12 +132,4 @@ class Gnip::Connection < Gnip::Base
     return (activities_list.empty? ? [] : activities_list['activity'].collect { |activity_hash| Gnip::Activity.from_hash(activity_hash)})
   end
 
-  def self.get_timestamp(time)
-    timestamp = 'current'
-    if (time)
-      timestamp = Gnip.five_minute_floor(time)
-      timestamp = Gnip.formatted_time(timestamp)
-    end
-    timestamp
-  end
 end

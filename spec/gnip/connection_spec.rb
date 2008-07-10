@@ -240,13 +240,11 @@ describe Gnip::Connection do
 
   def setup_mock_for_activity_get(activities, prefix_path, server_time = nil)
     headers = @gnip_connection.send(:headers)
-    if (server_time)
-      time = Gnip.five_minute_floor(server_time)
-      formatted_time = Gnip.formatted_time(time)
-      path = "#{prefix_path}/activity/#{formatted_time}.xml"
-    else
-      path = "#{prefix_path}/activity/current.xml"
-    end
+    path = if (server_time)
+             "#{prefix_path}/activity/#{server_time.to_gnip_bucket_id}.xml"
+           else
+             "#{prefix_path}/activity/current.xml"
+           end
     mock_response = successful_response
     mock_response.should_receive(:body).and_return(activities)
     mock_http.should_receive(:get2).with(path, headers).and_return(mock_response)
