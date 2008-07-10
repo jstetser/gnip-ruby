@@ -1,6 +1,24 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 describe Gnip::Connection do
+  
+  describe '#initialize()' do 
+    it 'should set library wide connection' do
+      Gnip.reset_connection
+      
+      conn = Gnip::Connection.new(Gnip::Config.new("user", "password", "s.gnipcentral.com", false))
+      Gnip.connection.should be_equal(conn)  # same object
+    end
+
+    it 'should not change the canonical connection if it is already set' do
+      Gnip.connect("user", "password")
+
+      lambda {
+        Gnip::Connection.new(Gnip::Config.new("user", "password", "s.gnipcentral.com", false))
+      }.should_not change{Gnip.connection}
+    end 
+  end
+
 
   before do
     @mock_publisher_name = 'mock_pub'
@@ -21,28 +39,28 @@ describe Gnip::Connection do
         setup_mock_for_publisher( @activities, @server_now)
         response, activities = @gnip_connection.activities_stream(@mock_publisher, @server_now)
         response.code.should == '200'
-        Gnip::Connection.send(:list_to_xml, activities).should == @activities
+        Gnip::Activity.list_to_xml(activities).should == @activities
       end
 
       it "should get current activites  per publisher " do
         setup_mock_for_publisher(@activities)
         response, activities = @gnip_connection.activities_stream(@mock_publisher)
         response.code.should == '200'
-        Gnip::Connection.send(:list_to_xml, activities).should == @activities
+        Gnip::Activity.list_to_xml(activities).should == @activities
       end
 
       it "should get activities per collection for a given time" do
         setup_mock_for_collection(@activities, @server_now)
         response, activities = @gnip_connection.activities_stream(@mock_collection, @server_now)
         response.code.should == '200'
-        Gnip::Connection.send(:list_to_xml, activities).should == @activities
+        Gnip::Activity.list_to_xml(activities).should == @activities
       end
 
       it "should get current activites per collection" do
         setup_mock_for_collection(@activities)
         response, activities = @gnip_connection.activities_stream(@mock_collection)
         response.code.should == '200'
-        Gnip::Connection.send(:list_to_xml, activities).should == @activities
+        Gnip::Activity.list_to_xml(activities).should == @activities
       end
     end
 
@@ -80,14 +98,6 @@ describe Gnip::Connection do
       activity.guid.should == 'def456'
     end
 
-    it 'should marshall from a list correctly' do
-      now = Time.now
-      activity_list = []
-      activity_list << Gnip::Activity.new("joe", "added_friend", now, "qwerty890")
-      activity_list << Gnip::Activity.new("jane", "added_application", now, "def456")
-      activity_xml =  pub_activities_at(now)
-      Gnip::Connection.send(:list_to_xml, activity_list).should == activity_xml
-    end
   end
 
   describe "Collection" do
@@ -170,8 +180,6 @@ describe Gnip::Connection do
     a_mock = mock('http_mock')
     Net::HTTP.should_receive(:new).with(@gnip_config.base_url, 443).and_return(a_mock)
     a_mock.should_receive(:use_ssl=).with(true)
-    a_mock.should_receive(:timeout=).with(2)
-    a_mock.should_receive(:ssl_timeout=).with(2)
     a_mock.should_receive(:read_timeout=).with(5)
     a_mock
   end

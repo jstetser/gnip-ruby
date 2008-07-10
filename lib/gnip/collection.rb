@@ -1,7 +1,5 @@
 class Gnip::Collection
 
-  include Gnip
-
   attr_accessor :post_url
   attr_reader :uids, :name
 
@@ -43,7 +41,7 @@ class Gnip::Collection
   end
 
   def self.from_hash(hash)
-    collection = Collection.new(hash['name'])
+    collection = new(hash['name'])
     collection.post_url = hash['postUrl'] if hash['postUrl']
     uids = hash['uid']
     if uids

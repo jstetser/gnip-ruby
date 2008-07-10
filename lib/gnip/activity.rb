@@ -1,5 +1,4 @@
 class Gnip::Activity
-  include Gnip
 
   attr_reader :uid,:at,:guid,:type, :publisher
 
@@ -37,4 +36,10 @@ class Gnip::Activity
     hash = XmlSimple.xml_in(document)
     self.from_hash(hash)
   end
+
+  def self.list_to_xml(activity_list)
+    activity_list = [] if activity_list.nil?
+    return XmlSimple.xml_out(activity_list.collect { |activity| activity.to_hash}, {'RootName' => 'activities', 'AnonymousTag' => nil, 'XmlDeclaration' => Gnip.header_xml})
+  end
+
 end
