@@ -7,6 +7,8 @@ require 'rake/testtask'
 require 'rake/rdoctask'
 require 'spec/rake/spectask'
 
+task :default => :spec
+
 spec = Gem::Specification.new do |s|
   s.name ="gnip"
   s.version = "0.0.4"
