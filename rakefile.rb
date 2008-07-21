@@ -7,11 +7,14 @@ require 'rake/testtask'
 require 'rake/rdoctask'
 require 'spec/rake/spectask'
 
+def gem_spec
+  eval(File.read(Pathname(__FILE__).dirname + "gnip.gemspec"))
+end
+
+
 task :default => :spec
 
-# gemspec moved to gnip.gemspec
-
-Rake::GemPackageTask.new(spec) do |pkg|
+Rake::GemPackageTask.new(gem_spec) do |pkg|
   pkg.need_tar = true
 end
 
@@ -19,3 +22,5 @@ desc "Run all specs in spec directory (excluding plugin specs)"
 Spec::Rake::SpecTask.new() do |t|
   t.spec_files = FileList['spec/**/*_spec.rb']
 end
+
+
