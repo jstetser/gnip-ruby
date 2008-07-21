@@ -1,3 +1,5 @@
+require "rake"
+
 Gem::Specification.new do |s|
   s.name ="gnip"
   s.version = "0.0.4"
