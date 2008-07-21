@@ -1,5 +1,6 @@
 = Gnip Client
 
+
 This library provides a Ruby API for accessing
 {Gnip}[http://gnipcentral.com] web services.  There are two basic
 roles for using Gnip: subscribers and publishers.  This library
