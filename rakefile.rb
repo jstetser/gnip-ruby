@@ -6,9 +6,10 @@ require 'rake'
 require 'rake/testtask'
 require 'rake/rdoctask'
 require 'spec/rake/spectask'
+require 'pathname'
 
 def gem_spec
-  eval(File.read(Pathname(__FILE__).dirname + "gnip.gemspec"))
+  eval(File.read(Pathname(__FILE__).dirname + "gnip-ruby.gemspec"))
 end
 
 
