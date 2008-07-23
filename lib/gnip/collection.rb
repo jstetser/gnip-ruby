@@ -60,4 +60,42 @@ class Gnip::Collection
   def adduid(uid)
     @uids << uid
   end
+
+  # Returns a set of activities that occured around a partiular time
+  # for this collection.
+  #
+  # @param [Time] time   The time at which you are interested in the
+  #     activities of this collection.  Default: Time.now
+  #
+  # @return [Array of Gnip::Activities] 
+  #
+  # @raises [Exception]  If getting the activities does not succeed.
+  def activities(time = Time.now)
+    logger.debug("Getting activities for #{name} at #{time.to_gnip_bucket_id}")
+    
+    response, activities_xml = Gnip.connection.get("#{activity_bucket_uri_for(time)}")
+
+    raise GnipRequestError, 
+      "Gnip responded to GET request to \"#{activity_bucket_uri_for(time)}\" with a #{response.code} response" unless response.code =~ /^2/
+    
+    Gnip::Activity.unmarshal_activity_xml(activities_xml)
+  end
+
+  # The URI of this collections activity stream.
+  def activity_stream_uri
+    "/collections/#{name}/activity"
+  end
+  
+  # The URI to a particular activity bucket of this collections
+  # activity stream.
+  def activity_bucket_uri_for(at_time)
+    "/collections/#{name}/activity/#{at_time.to_gnip_bucket_id}.xml"
+  end
+
+  private 
+  
+  # The logger this object should use.
+  def logger
+    Gnip.logger
+  end
 end
