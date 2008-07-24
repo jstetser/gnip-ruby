@@ -8,5 +8,6 @@ Gem::Specification.new do |s|
   s.require_path = "lib"
   s.has_rdoc = true
   s.extra_rdoc_files = ["README"]
-  s.add_dependency("xml-simple", [">= 1.0.11"])
+  s.add_dependency("xml-simple", ">= 1.0.11")
+  s.add_dependency("facets",      ">= 2.4.1")
 end
