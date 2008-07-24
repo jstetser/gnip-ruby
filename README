@@ -78,7 +78,7 @@ past you can remove it.
 
     gnip = Gnip::Connection.new(Gnip::Config.new("me@mydomain.com", "my-password"))
 
-    a_collection = gnip.get_collection("my-collection")
+    _,a_collection = gnip.get_collection("my-collection")
 
     gnip.delete(a_collection)
 
