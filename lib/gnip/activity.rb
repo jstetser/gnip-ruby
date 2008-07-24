@@ -51,14 +51,13 @@ class Gnip::Activity
   end
 
   def self.unmarshal_activity_xml(activities_xml)
-    with(REXML::Document.new(activities_xml)) do |doc|
-      doc.get_elements('/activities/activity').map do |activity_elem|
-        Gnip::Activity.new(activity_elem.attribute('uid').value,
-                           activity_elem.attribute('type').value,
-                           activity_elem.attribute('at').value,
-                           activity_elem.attribute('guid').value,
-                           activity_elem.attribute('publisher.name').ergo{|a| a.value})
-      end
+    doc = REXML::Document.new(activities_xml)
+    doc.get_elements('/activities/activity').map do |activity_elem|
+      Gnip::Activity.new(activity_elem.attribute('uid').value,
+                         activity_elem.attribute('type').value,
+                         activity_elem.attribute('at').value,
+                         activity_elem.attribute('guid').value,
+                         activity_elem.attribute('publisher.name').ergo{|a| a.value})
     end
   end
 
