@@ -8,7 +8,7 @@ provides a single API for both roles.
 
 == Consumer
 
-=== Example 1: Retrieve all recent activities at a publisher
+=== Example 1: Retrieve all recent activities for a publisher
 
 As a consumer one thing you might be interested in immediately is to
 grab recent activity at a particular publisher.  To do this you must
@@ -22,10 +22,10 @@ it's activities stream.
     gnip = Gnip::Connection.new(Gnip::Config.new("me@mydomain.com", "my-password"))
 
     _,digg = gnip.get_publisher('digg')
-    activities = gnip.activities_stream(digg)
+    activities = gnip.publisher_activities_stream(digg)
 
 
-=== Example 2: Retrieve all activities at a publisher around a specific time
+=== Example 2: Retrieve all activities for a publisher around a specific time
 
 Some times you will want to get activity information from before now.
 Doing this look much like getting the recent activity, except that you
@@ -39,48 +39,46 @@ include some activities before and after the time you specify.
     gnip = Gnip::Connection.new(Gnip::Config.new("me@mydomain.com", "my-password"))
 
     _,digg = gnip.get_publisher('digg')
-    activities = gnip.activities_stream(digg, Time.now - 3600)  # 1 hour ago
+    activities = gnip.publisher_activities_stream(digg, Time.now - 3600)  # 1 hour ago
 
 
 === Example 3: Create an activity stream that includes only activities
     done by users you care about.
 
 If you would like to filter a set of publishers by the user that
-performed the activity you may create a collection to do so.  Once
-created a collection's activity stream is retrieved much like a
+performed the activity you may create a filter to do so.  Once
+created a filter's activity stream is retrieved much like a
 publishers.  Activity that has already occured will not be included in
-a collection.  Therefore any new collection will be empty until some
+a filter.  Therefore any new filter will be empty until some
 new matching activity has occured.
 
-Note: Collection names must be unique across the system so you might
-want to attach your username to the logical name of any collections
-you create.
 
     require 'rubygems'
     require 'gnip' 
 
     gnip = Gnip::Connection.new(Gnip::Config.new("me@mydomain.com", "my-password"))
 
-    my_collection = Gnip::Collection.new('my-collection')
-    my_collection.add_uid('Burento', 'digg')
+    digg = Gnip::Publisher.new('digg')
+    my_filter = Gnip::Filter.new('my-filter')
+    my_filter.addRule(Gnip::Rule.new('actor', 'Burento')
 
-    gnip.create(my_collection)
+    gnip.create(digg,my_filter)
     
-    _,activities = gnip.activities_stream(my_collection)
+    _,publisher,activities = gnip.activities_stream(my_filter)
 
-=== Example 4: Delete a collection
+=== Example 4: Delete a filter
 
-If you decide you no longer need a collection you have created in the
+If you decide you no longer need a filter you have created in the
 past you can remove it.
 
     require 'rubygems'
     require 'gnip' 
 
     gnip = Gnip::Connection.new(Gnip::Config.new("me@mydomain.com", "my-password"))
+    digg = Gnip::Publisher.new('digg')
+    _,my_filter = gnip.get_filter(digg,"my-filter")
 
-    _,a_collection = gnip.get_collection("my-collection")
-
-    gnip.delete(a_collection)
+    gnip.remove_filter(my_filter)
 
 == Publisher
 

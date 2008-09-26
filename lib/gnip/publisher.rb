@@ -33,21 +33,6 @@ class Gnip::Publisher
     return self.from_hash(hash)
   end
 
-  # To Publish activities to gnip you must be the owner of the publisher.
-  #
-  # @param [Enumerable] activities -- A collection of activities to
-  #   publish to Gnip.
-  #
-  # @raise [PublishingError]  Raised if the publish does not succeed for any reason.
-  def publish(activities)
-    Gnip.logger.info("Publishing #{activities.size} activities for #{name}")
-    response = Gnip.connection.post(path, Gnip::Activity.list_to_xml(activities))
-
-    raise PublishingError, "Server returned #{response.code} response." unless response.code =~ /^2\d{2}/
-  end
-
-  
-
   private
 
   def path
