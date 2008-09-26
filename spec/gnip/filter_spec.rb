@@ -7,7 +7,7 @@ describe Gnip::Filter do
 
   it 'should be able to figure the URI of any particular activity bucket' do
     Gnip::Filter.new('url-safe-name').activity_bucket_uri_for(Time.parse('2008-07-11T12:34Z')).should ==
-      "filters/url-safe-name/activity/200807111230.xml"
+      "filters/url-safe-name/activity/200807111234.xml"
   end 
  
   it "should create filter with correct xml format" do

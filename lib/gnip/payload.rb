@@ -15,7 +15,6 @@ class Gnip::Payload
         result = {}
         result['body'] = @body
         result['raw'] = @raw_value if @raw_value
-
         {'payload' => result }
     end
 
