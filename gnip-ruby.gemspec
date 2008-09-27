@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "gnip"
-  s.version = "2.0.1"
+  s.version = "2.0.2"
   s.homepage = "http://www.gnipcentral.com"
   s.platform = Gem::Platform::RUBY
   s.summary = "Library to access Gnip"

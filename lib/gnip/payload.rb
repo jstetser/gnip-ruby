@@ -13,9 +13,9 @@ class Gnip::Payload
 
     def to_hash()
         result = {}
-        result['body'] = @body
-        result['raw'] = @raw_value if @raw_value
-        {'payload' => result }
+        result['body'] = [@body]
+        result['raw'] = [@raw_value]  if @raw_value
+        result
     end
 
     def ==(another)

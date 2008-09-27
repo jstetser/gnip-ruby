@@ -4,21 +4,21 @@ describe Gnip::Activity do
   it 'should known when another activity is equal to itself' do
     a = Gnip::Activity.new("joe", "added_friend", Time.parse('2007-05-23T00:53:11Z'), "qwerty890")
     b = Gnip::Activity.new("joe", "added_friend", Time.parse('2007-05-23T00:53:11Z'), "qwerty890")
-    
+
     (a == b).should be_true
     a.eql?(b).should be_true
-  end 
+  end
 
   it 'should know when another activity is not equal to itself' do
     a = Gnip::Activity.new("joe", "added_friend", Time.parse('2007-05-23T00:53:11Z'), "qwerty890")
     b = Gnip::Activity.new("joe", "added_friend", Time.parse('2007-05-23T00:53:11Z'), "some other guid")
 
     (a == b).should be_false
-    a.eql?(b).should be_false    
-  end 
+    a.eql?(b).should be_false
+  end
 
-  describe '.from_xml(activity_xml)' do 
-    
+  describe '.from_xml(activity_xml)' do
+
     it 'should have the correct activities' do
       activity_xml = <<XML
 <?xml version="1.0" encoding="UTF-8"?>
@@ -34,7 +34,7 @@ XML
       activities.should have(3).items
       activities.should include(Gnip::Activity.new("joe", "added_friend", Time.parse('2007-05-23T00:53:11Z'), "qwerty890"))
       activities.should include(Gnip::Activity.new("jane", "added_application", Time.parse('2008-08-23T00:53:11Z'), "def456"))
-    end 
+    end
 
     it 'should handle activities xml without activities' do
       activity_xml = <<XML
@@ -46,13 +46,13 @@ XML
       Gnip::Activity.from_xml(activity_xml).should be_nil
     end
   end
-  
+
   describe '.list_to_xml(activities)' do
-    it 'should marshal a list of activities to xml' do 
+    it 'should marshal a list of activities to xml' do
       activity_list = []
       activity_list << Gnip::Activity.new("joe", "added_friend", Time.parse('2007-05-23T00:53:11Z'), "qwerty890")
       activity_list << Gnip::Activity.new("jane", "added_application", Time.parse('2008-08-23T00:53:11Z'), "def456")
-      
+
       Gnip::Activity.list_to_xml(activity_list).should == <<XML
 <?xml version="1.0" encoding="UTF-8"?>
 <activities>
@@ -62,17 +62,17 @@ XML
 XML
     end
 
-    it 'should marshal an empty list of activities to xml' do 
+    it 'should marshal an empty list of activities to xml' do
       activity_list = []
-      
+
       Gnip::Activity.list_to_xml(activity_list).should == <<XML
 <?xml version="1.0" encoding="UTF-8"?>
 <activities>
 </activities>
 XML
-    end    
-  end 
-  
+    end
+  end
+
   it "should marshall to xml correctly" do
     now = Time.now
     activity = Gnip::Activity.new('bob','type', now)
@@ -88,12 +88,19 @@ XML
     activity_xml =  "  <activity actor=\"bob\" url=\"url\" action=\"action\" at=\"#{now.xmlschema}\" />\n"
     activity.to_xml.should == activity_xml
   end
-  
-  it "should marshall to xml correctly with publisher" do
+
+  it "should marshall to xml correctly with to" do
     now = Time.now
     activity = Gnip::Activity.new('bob','action',now,'url','to')
-    
+
     activity_xml = "  <activity actor=\"bob\" url=\"url\" action=\"action\" to=\"to\" at=\"#{now.xmlschema}\" />\n"
+    activity.to_xml.should == activity_xml
+  end
+
+  it "should marshall to xml correctly with payload" do
+    now = Time.now
+    activity = Gnip::Activity.new('bob','action',now,'url','to', nil, nil, nil, Gnip::Payload.new("body"))
+    activity_xml = "  <activity actor=\"bob\" url=\"url\" action=\"action\" to=\"to\" at=\"#{now.xmlschema}\">\n    <payload>\n      <body>body</body>\n    </payload>\n  </activity>\n"
     activity.to_xml.should == activity_xml
   end
 
