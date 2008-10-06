@@ -33,7 +33,24 @@ HEREDOC
 
     filter.to_xml.should == <<HEREDOC
 <?xml version="1.0" encoding="UTF-8"?>
-  <filter name="url-safe-name" fullData="true" postUrl="http://example.com">
+  <filter name="url-safe-name" fullData="true">
+    <postUrl>http://example.com</postUrl>
+    <rule type="actor" value="joe" />
+    <rule type="actor" value="jack" />
+  </filter>
+HEREDOC
+  end
+
+  it "should create filter with correct xml format with JID" do
+    filter = Gnip::Filter.new('url-safe-name')
+    filter.jid = "tom@example.com"
+    filter.add_rule("actor", "joe")
+    filter.add_rule("actor", "jack")
+
+    filter.to_xml.should == <<HEREDOC
+<?xml version="1.0" encoding="UTF-8"?>
+  <filter name="url-safe-name" fullData="true">
+    <jid>tom@example.com</jid>
     <rule type="actor" value="joe" />
     <rule type="actor" value="jack" />
   </filter>
@@ -72,7 +89,8 @@ HEREDOC
   it 'should unmarshall from xml correctly with POST URL' do
     filter_xml =  <<HEREDOC
 <?xml version="1.0" encoding="UTF-8"?>
-  <filter name="url-safe-name" fullData="false" postUrl="http://example.com">
+  <filter name="url-safe-name" fullData="false">
+    <postUrl>http://example.com</postUrl>
     <rule type="actor" value="joe" />
     <rule type="actor" value="jack" />
   </filter>
@@ -89,7 +107,8 @@ HEREDOC
   it 'should unmarshall from xml correctly with jid' do
     filter_xml =  <<HEREDOC
 <?xml version="1.0" encoding="UTF-8"?>
-  <filter name="url-safe-name" fullData="true" jid="tom@example.com">
+  <filter name="url-safe-name" fullData="true">
+    <jid>tom@example.com</jid>
     <rule type="actor" value="joe" />
     <rule type="actor" value="jack" />
   </filter>

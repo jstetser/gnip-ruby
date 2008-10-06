@@ -29,8 +29,8 @@ class Gnip::Filter
         result = {}
         result['name'] = @name
         result['fullData'] = @full_data
-        result['postUrl'] = @post_url if @post_url
-        result['jid'] = @jid if @jid
+        result['postUrl'] = [@post_url]  if @post_url
+        result['jid'] = [@jid]  if @jid
         result['rule'] = rules.collect { |rule| rule.to_hash()}
         { 'filter' => result }
     end
@@ -50,8 +50,8 @@ class Gnip::Filter
     def self.from_hash(hash)
         filter = new(hash['name'])
         filter.full_data = value_to_boolean(hash['fullData'])
-        filter.post_url = hash['postUrl'] if hash['postUrl']
-        filter.jid = hash['jid'] if hash['jid']
+        filter.post_url = hash['postUrl'].first if hash['postUrl']
+        filter.jid = hash['jid'].first if hash['jid']
         rules = hash['rule']
         if rules
             rules.each do |rule_hash|
