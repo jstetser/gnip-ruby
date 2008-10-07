@@ -237,7 +237,7 @@ class Gnip::Connection < Gnip::Base
         port ||= 443
 
         http = Net::HTTP.new(hostname, port)
-        http.read_timeout=5
+        http.read_timeout=@gnip_config.http_read_timeout
         http.use_ssl = true if port == 443
         return http
     end
