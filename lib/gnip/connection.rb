@@ -246,6 +246,7 @@ class Gnip::Connection < Gnip::Base
         header_hash = {}
         header_hash['Authorization'] = 'Basic ' + Base64::encode64("#{@gnip_config.user}:#{@gnip_config.password}")
         header_hash['Content-Type'] = 'application/xml'
+        header_hash['User-Agent'] = 'Gnip-Client-Ruby/2.0.1'
         if @gnip_config.use_gzip
             header_hash['Content-Encoding'] = 'gzip'
             header_hash['Accept-Encoding'] = 'gzip'

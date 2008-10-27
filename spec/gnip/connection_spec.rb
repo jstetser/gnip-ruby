@@ -15,6 +15,37 @@ describe Gnip::Connection do
         @gnip_connection = Gnip::Connection.new(@gnip_config)
     end
 
+    describe "Reqest Header" do
+        it "should include an agent string header" do
+            header = @gnip_connection.send(:headers)
+            header['User-Agent'].should == "Gnip-Client-Ruby/2.0.1"
+        end
+
+        it "should include authorization header" do
+            header = @gnip_connection.send(:headers)
+            header['Authorization'].should ==  'Basic ' + Base64::encode64("#{@gnip_config.user}:#{@gnip_config.password}")
+        end
+
+        it 'should include content type header' do
+            header = @gnip_connection.send(:headers)
+            header['Content-Type'].should == 'application/xml'
+        end
+
+        it "should include gzip header if configured for gzip" do
+            gnip_config = Gnip::Config.new("user", "password", "s.gnipcentral.com", true)
+            gnip_connection = Gnip::Connection.new(gnip_config)
+            header = gnip_connection.send(:headers)
+            header['Content-Encoding'].should == 'gzip'
+            header['Accept-Encoding'].should == 'gzip'
+        end
+
+        it "should include gzip header if configured for gzip" do
+            header = @gnip_connection.send(:headers)
+            header['Content-Encoding'].should == nil
+            header['Accept-Encoding'].should == nil
+        end
+    end
+
     describe "Notifictaion Streams For Subscriber" do
         it "should get activities per publisher for a given time" do
             setup_mock_notification_for_publisher( @activities, @server_now)
