@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 describe Gnip::Rule do
-  it "should create uid with correct xml format" do
+  it "should create rule with correct xml format" do
     rule = Gnip::Rule.new('actor', 'jud')
 
     rule.to_xml.should == <<HEREDOC

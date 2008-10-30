@@ -1,8 +1,10 @@
 class Gnip::Publisher
   attr_reader :name
+  attr_accessor :supported_rule_types
 
-  def initialize(name)
+  def initialize(name, suppported_rule_types = [])
     @name = name
+    @supported_rule_types = suppported_rule_types
   end
 
   def uri
@@ -16,6 +18,7 @@ class Gnip::Publisher
   def to_hash()
     result = {}
     result['name'] = @name
+    result['supportedRuleTypes'] = @supported_rule_types.collect { |type| type.to_hash}
     { 'publisher' => result }
   end
 
@@ -24,8 +27,15 @@ class Gnip::Publisher
   end
   alias :eql? :==
 
-  def self.from_hash(hash)
-    return Gnip::Publisher.new(hash['name'])
+  def self.from_hash(hash)       
+      found_rule_types = []
+      rule_types = hash['supportedRuleTypes']
+        if rule_types
+            rule_types.each do |rule_type_hash|                
+                found_rule_types << Gnip::RuleType.from_hash(rule_type_hash['type'].first)
+            end
+        end
+    return Gnip::Publisher.new(hash['name'], found_rule_types)
   end
 
   def self.from_xml(document)
