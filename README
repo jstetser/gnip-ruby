@@ -6,6 +6,18 @@ This library provides a Ruby API for accessing
 roles for using Gnip: subscribers and publishers.  This library
 provides a single API for both roles.
 
+== Dependencies
+
+=== Runtime
+    rubygems
+    xml-simple
+
+=== Testing
+    rake
+    rspec
+
+
+
 == Consumer
 
 === Example 1: Retrieve all recent activities for a publisher

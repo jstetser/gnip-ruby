@@ -41,22 +41,6 @@ HEREDOC
 HEREDOC
   end
 
-  it "should create filter with correct xml format with JID" do
-    filter = Gnip::Filter.new('url-safe-name')
-    filter.jid = "tom@example.com"
-    filter.add_rule("actor", "joe")
-    filter.add_rule("actor", "jack")
-
-    filter.to_xml.should == <<HEREDOC
-<?xml version="1.0" encoding="UTF-8"?>
-  <filter name="url-safe-name" fullData="true">
-    <jid>tom@example.com</jid>
-    <rule type="actor" value="joe" />
-    <rule type="actor" value="jack" />
-  </filter>
-HEREDOC
-  end
-
    it 'should unmarshall from xml correctly' do
     filter_xml =  <<HEREDOC
 <?xml version="1.0" encoding="UTF-8"?>
@@ -102,23 +86,6 @@ HEREDOC
     filter.rules[0].value.should == 'joe'
     filter.rules[0].type.should == 'actor'
     filter.post_url.should == "http://example.com"
-  end
-
-  it 'should unmarshall from xml correctly with jid' do
-    filter_xml =  <<HEREDOC
-<?xml version="1.0" encoding="UTF-8"?>
-  <filter name="url-safe-name" fullData="true">
-    <jid>tom@example.com</jid>
-    <rule type="actor" value="joe" />
-    <rule type="actor" value="jack" />
-  </filter>
-HEREDOC
-    filter = Gnip::Filter.from_xml(filter_xml)
-    filter.name.should == "url-safe-name"
-    filter.rules.size.should == 2
-    filter.rules[0].value.should == 'joe'
-    filter.rules[0].type.should == 'actor'
-    filter.jid.should == "tom@example.com"
   end
 
   it "should allow adding and removing actor" do
