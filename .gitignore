@@ -1,4 +1,5 @@
 \#*#
 *~
 pkg
-ruby.iml
+*.iml
+.idea
