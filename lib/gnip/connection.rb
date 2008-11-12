@@ -175,11 +175,6 @@ class Gnip::Connection < Gnip::Base
         return put("/#{publisher.uri}/#{publisher.name}/#{filter.uri}/#{filter.name}.xml", filter.to_xml)
     end
 
-    def remove_publisher(resource)
-        logger.info("Removing #{publisher.class} with name #{publisher.name}")
-        return delete("/#{publisher.uri}/#{publisher.name}.xml")
-    end
-
     def remove_filter(publisher, filter)
         logger.info("Creating #{filter.class} with name #{filter.name}")
         return delete("/#{publisher.uri}/#{publisher.name}/#{filter.uri}/#{filter.name}.xml")
