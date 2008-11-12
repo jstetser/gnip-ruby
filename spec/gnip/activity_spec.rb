@@ -166,18 +166,18 @@ XML
 
  it "should unmarshal from xml correctly with all fields and payload" do
     now = Time.now
-    activity_xml =  '<activity url="qwerty890" action="added_friend" actor="joe" to="jane" regarding="def456" tags="dogs,cats" source="web" at="2007-05-23T00:53:11Z" ><payload><body>body</body></payload></activity>'
+    activity_xml =  '<activity url="qwerty890" action="added_friend" actor="joe" to="jane" regarding="def456" tags="dogs,cats" source="web" at="2007-05-23T00:53:11Z" ><payload><body>body</body><raw>H4sIAPJqG0kAAytKLAcAVduzGgMAAAA=</raw></payload></activity>'
     activity = Gnip::Activity.from_xml(activity_xml)
     activity.at.should == '2007-05-23T00:53:11Z'
     activity.actor.should == 'joe'
     activity.action.should == 'added_friend'
     activity.url.should == 'qwerty890'
     activity.to.should == 'jane'
-    activity.regarding == 'def456'
-    activity.source == 'web'
-    activity.tags == "dogs,cats"
-    activity.payload.body == 'body'
-    activity.payload.raw.should be_nil
+    activity.regarding.should == 'def456'
+    activity.source.should == 'web'
+    activity.tags.should == "dogs,cats"
+    activity.payload.body.should == 'body'
+    activity.payload.raw.should == 'raw'
   end
 
 end

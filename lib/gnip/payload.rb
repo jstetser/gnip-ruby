@@ -30,7 +30,7 @@ class Gnip::Payload
     def self.from_hash(hash)
         return if hash.nil?  || hash.empty?
         body = hash['body'].first if hash['body']
-        raw = hash['raw'].first if hash['raw']
+        raw = decode(hash['raw'].first) if hash['raw']
         Gnip::Payload.new(body, raw)
     end
 
@@ -46,11 +46,11 @@ class Gnip::Payload
         gzip_writer = Zlib::GzipWriter.new(result)
         gzip_writer.write(some_string)
         gzip_writer.close
-        [result.string].pack('m')
+        Base64.encode64(result.string)
     end
 
     def self.decode(raw)
-        Zlib::GzipReader.new(StringIO.new(raw.unpack('m').first)).read
+        Zlib::GzipReader.new(StringIO.new(Base64.decode64(raw))).read
     end
 
 end
