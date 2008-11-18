@@ -18,7 +18,7 @@ describe Gnip::Connection do
     describe "Reqest Header" do
         it "should include an agent string header" do
             header = @gnip_connection.send(:headers)
-            header['User-Agent'].should == "Gnip-Client-Ruby/2.0.5"
+            header['User-Agent'].should == "Gnip-Client-Ruby/2.0.6"
         end
 
         it "should include authorization header" do
