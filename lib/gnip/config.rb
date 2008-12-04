@@ -12,8 +12,4 @@ class Gnip::Config
     @logger.level = Logger::ERROR
   end
 
-  def set_logger_level(level) 
-    @logger.level = level
-  end
-
 end

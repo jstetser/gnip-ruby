@@ -38,11 +38,12 @@ To run the tests for the library, do:
 The Gnip Ruby library uses the Ruby Logger to send messages to the console.
 By default, the Logger is configured to send messages at the ERROR level 
 and above; when developing a Gnip client, however, it can be helpful to see
-more verbose logging messages from the library.  To configure the logger, 
-call "set_logger_level" on the Gnip::Config object like:
+more verbose logging messages from the library.  The Logger used in the library
+is provided by the Gnip::Config instance.  To set a logging level on the Logger,
+call:
 
   config = Gnip::Config("me@mydomain.com", "my-password")
-  config.set_logger_level(Logger::DEBUG)
+  config.logger.level = Logger::DEBUG
 
 and remember to re-initialize any Gnip::Connection objects with this Gnip::Config
 instance.
@@ -64,7 +65,7 @@ it's activities stream.
 
     _,digg = gnip.get_publisher('digg')
     activities = gnip.publisher_activities_stream(digg)
-    puts "Received #{activities != nil ? activities.size : 0} activities}"
+    puts "Received #{activities != nil ? activities.size : 0} activities"
 
 Example 2: Retrieve all activities for a publisher around a specific time
 
@@ -81,7 +82,7 @@ include some activities before and after the time you specify.
 
     _,digg = gnip.get_publisher('digg')
     activities = gnip.publisher_activities_stream(digg, Time.now - 3600)  # 1 hour ago
-    puts "Received #{activities != nil ? activities.size ? 0} activities}"
+    puts "Received #{activities != nil ? activities.size ? 0} activities"
 
 Example 3: Create an activity stream that includes only activities done by users you care about
 
@@ -142,7 +143,6 @@ published in it's activity stream.
     gnip.create(my_publisher)
 
     activity = Gnip::Activity.new('joe', 'post', Time.now, 'http://mydomain.com/joe/my-new-blog-post')
-
 
     gnip.publish(my_publisher, activity)
 
