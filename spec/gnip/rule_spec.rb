@@ -4,12 +4,15 @@ describe Gnip::Rule do
   it "should create rule with correct xml format" do
     rule = Gnip::Rule.new('actor', 'jud')
 
-    rule.to_xml.should == <<HEREDOC
+=begin
+  Expected XML
 <?xml version="1.0" encoding="UTF-8"?>
 <rule type="actor" value="jud" />
-HEREDOC
+=end
+    rule.to_xml.should include("<rule")
+    rule.to_xml.should include("type=\"actor\"")
+    rule.to_xml.should include("value=\"jud\"")  
   end
-
 
    it 'should unmarshal from xml correctly' do
     rule_xml =  <<HEREDOC

@@ -140,6 +140,8 @@ class Gnip::Connection < Gnip::Base
         publisher = nil
         if (response.code == '200')
             publisher = Gnip::Publisher.from_xml(data)
+        else 
+            logger.info("Received error response #{response.code}")
         end
         return [response, publisher]
     end

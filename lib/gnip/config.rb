@@ -7,8 +7,13 @@ class Gnip::Config
     @user = user
     @password = password
     @use_gzip = use_gzip
+    @http_read_timeout = http_read_timeout
     @logger = Logger.new(STDERR)
     @logger.level = Logger::ERROR
-    @http_read_timeout = http_read_timeout
   end
+
+  def set_logger_level(level) 
+    @logger.level = level
+  end
+
 end

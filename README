@@ -1,26 +1,55 @@
-= Gnip Client
+Welcome to the Gnip Ruby convenience library!
 
+= Overview =
+This library provides a Ruby API for accessing Gnip web services.  This library supports
+two types of Gnip users -- publishers and consumers.  
 
-This library provides a Ruby API for accessing
-{Gnip}[http://gnipcentral.com] web services.  There are two basic
-roles for using Gnip: subscribers and publishers.  This library
-provides a single API for both roles.
+= Dependencies = 
+This library has two runtime dependencies:
+  - rubygems
+  - xml-simple
 
-== Dependencies
+There are also two test dependencies:
+  - rake
+  - rspec
 
-=== Runtime
-    rubygems
-    xml-simple
+Instructions for installing the libraries in Ruby are here:
 
-=== Testing
-    rake
-    rspec
+  http://www.rubygems.org/read/book/1 
 
+= Installing = 
 
+To build and install the library, run: 
 
-== Consumer
+  $> rake gem
+  $> gem install pkg/gnip-2.0.6.gem --local
 
-=== Example 1: Retrieve all recent activities for a publisher
+Once installed, the Ruby library can be included in a Ruby script with:
+
+  require 'gnip'
+
+= Testing = 
+
+To run the tests for the library, do:
+
+  $> rake spec
+
+= Debugging =
+The Gnip Ruby library uses the Ruby Logger to send messages to the console.
+By default, the Logger is configured to send messages at the ERROR level 
+and above; when developing a Gnip client, however, it can be helpful to see
+more verbose logging messages from the library.  To configure the logger, 
+call "set_logger_level" on the Gnip::Config object like:
+
+  config = Gnip::Config("me@mydomain.com", "my-password")
+  config.set_logger_level(Logger::DEBUG)
+
+and remember to re-initialize any Gnip::Connection objects with this Gnip::Config
+instance.
+
+= Consuming data from Gnip = 
+
+Example 1: Retrieve all recent activities for a publisher
 
 As a consumer one thing you might be interested in immediately is to
 grab recent activity at a particular publisher.  To do this you must
@@ -35,9 +64,9 @@ it's activities stream.
 
     _,digg = gnip.get_publisher('digg')
     activities = gnip.publisher_activities_stream(digg)
+    puts "Received #{activities != nil ? activities.size : 0} activities}"
 
-
-=== Example 2: Retrieve all activities for a publisher around a specific time
+Example 2: Retrieve all activities for a publisher around a specific time
 
 Some times you will want to get activity information from before now.
 Doing this look much like getting the recent activity, except that you
@@ -52,10 +81,9 @@ include some activities before and after the time you specify.
 
     _,digg = gnip.get_publisher('digg')
     activities = gnip.publisher_activities_stream(digg, Time.now - 3600)  # 1 hour ago
+    puts "Received #{activities != nil ? activities.size ? 0} activities}"
 
-
-=== Example 3: Create an activity stream that includes only activities
-    done by users you care about.
+Example 3: Create an activity stream that includes only activities done by users you care about
 
 If you would like to filter a set of publishers by the user that
 performed the activity you may create a filter to do so.  Once
@@ -64,7 +92,6 @@ publishers.  Activity that has already occured will not be included in
 a filter.  Therefore any new filter will be empty until some
 new matching activity has occured.
 
-
     require 'rubygems'
     require 'gnip' 
 
@@ -72,13 +99,18 @@ new matching activity has occured.
 
     digg = Gnip::Publisher.new('digg')
     my_filter = Gnip::Filter.new('my-filter')
-    my_filter.addRule(Gnip::Rule.new('actor', 'Burento')
+    my_filter.add_a_rule(Gnip::Rule.new('actor', 'Burento'))
 
-    gnip.create(digg,my_filter)
+    gnip.create_filter(digg, my_filter)
     
-    _,publisher,activities = gnip.activities_stream(my_filter)
+    _,publisher,activities = gnip.filter_activities_stream(digg, my_filter)
+    puts "Received #{activities != nil ? activities.size : 0} activities"
+   
+Note, a Gnip Filter only collects activities that match the Filter's rules.  
+As such, the "activities" value returned from teh filter_activities_stream
+may be empty if the rules haven't matched an activity for that Publisher.
 
-=== Example 4: Delete a filter
+Example 4: Delete a filter
 
 If you decide you no longer need a filter you have created in the
 past you can remove it.
@@ -88,13 +120,13 @@ past you can remove it.
 
     gnip = Gnip::Connection.new(Gnip::Config.new("me@mydomain.com", "my-password"))
     digg = Gnip::Publisher.new('digg')
-    _,my_filter = gnip.get_filter(digg,"my-filter")
+    _,my_filter = gnip.get_filter(digg, "my-filter")
 
-    gnip.remove_filter(my_filter)
+    gnip.remove_filter(digg, my_filter)
 
-== Publisher
+= Publishing data to Gnip = 
 
-=== Example 1: Create a publisher and publish some activities
+Example 1: Create a publisher and publish some activities
 
 If you are interested in publishing activity you will need to create a
 publisher.  Once the publisher resource is created, activities can be
@@ -108,13 +140,14 @@ published in it's activity stream.
     my_publisher = Gnip::Publisher.new('myservice')
 
     gnip.create(my_publisher)
-    
-    gnip.publish(my_publisher, 
-                 [Gnip::Activity.new('joe', 'post', Time.now, 'http://mydomain.com/joe/my-new-blog-post')])
+
+    activity = Gnip::Activity.new('joe', 'post', Time.now, 'http://mydomain.com/joe/my-new-blog-post')
 
 
-== Contributing
+    gnip.publish(my_publisher, activity)
 
+= Contributing =
+ 
 Contributions to this library are welcome.
 
 Source         :: git://github.com/gnip/gnip-ruby.git
@@ -122,10 +155,8 @@ Community Site :: {gnip-community}[http://groups.google.com/group/gnip-community
 Mailing List   :: gnip-community@googlegroups.com
 
 To get started create a clone of the main repository,
-<git://github.com/gnip/gnip-ruby.git>, and start improving it.  Feel
-discuss any changes you are making on the mailing list to get feed
-back from the other users.  Once you are ready to publish your changes
+<git://github.com/gnip/gnip-ruby.git>, and hack away.  Feel free
+discuss any changes you are making on the mailing list to get feedback 
+from the other users.  Once you are ready to publish your changes
 you can send them to the mailing list or, if you are using GitHub,
 send a pull request to the owner of the main repositiory.
-
-
