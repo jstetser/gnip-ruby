@@ -3,10 +3,11 @@ class Gnip::Filter
     attr_accessor :post_url
     attr_reader :rules, :name, :full_data
 
-    def initialize(name, full_data = true)
+    def initialize(name, full_data = true, publisher = nil)
         @name = name
         @full_data = full_data
         @rules = []
+        @publisher = publisher
     end
 
     def uri
