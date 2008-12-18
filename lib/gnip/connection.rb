@@ -20,24 +20,6 @@ class Gnip::Connection < Gnip::Base
     end
 
 
-    #Publish a activity xml document to gnip for a give publisher
-    #You must be the owner of the publisher to publish
-    #activities_xml is the xml stream of gnip activities
-    def publish_xml(publisher, activity_xml)
-        logger.info("Publishing activities for #{publisher.name}")
-        publisher_path = "/publishers/#{publisher.name}/activity.xml"
-        post(publisher_path, activity_xml)
-    end
-
-    #Publish a activity xml document to gnip for a give publisher
-    #You must be the owner of the publisher to publish
-    #activity_list is an array of activity objects
-    def publish(publisher, activity_list)
-        logger.info("Publishing activities for #{publisher.name}")
-        publisher_path = "/publishers/#{publisher.name}/activity.xml"
-        post(publisher_path, Gnip::Activity.list_to_xml(activity_list))
-    end
-
     # Gets the current activities for a publisher
     # Time is the time object. If nil, then the server returns the current bucket
     def publisher_activities_stream_xml(publisher, time = nil)

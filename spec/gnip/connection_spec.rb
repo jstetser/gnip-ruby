@@ -48,25 +48,6 @@ describe Gnip::Connection do
 
     describe "ActivityStream" do
 
-
-        describe "For Publisher" do
-            it "should post activities as xml successfully" do
-                setup_mock_for_publishing(@activities)
-                response = @gnip_connection.publish_xml(@mock_publisher, @activities)
-                response.code.should == "200"
-            end
-
-            it "should post activities as list successfully" do
-                now = Time.now
-                activity_list = []
-                activity_list << Gnip::Activity.new("joe", "added_friend", now, "qwerty890")
-                activity_list << Gnip::Activity.new("jane", "added_application", now, "def456")
-                setup_mock_for_publishing(pub_activities_at(now))
-                response = @gnip_connection.publish(@mock_publisher, activity_list)
-                response.code.should == "200"
-            end
-        end
-
         it 'should marshall to a list correctly' do
             now = Time.now
             activity_xml =  pub_activities_at(now)

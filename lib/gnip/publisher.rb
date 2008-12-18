@@ -54,6 +54,15 @@ class Gnip::Publisher
   def get_filtered_notifications(filter, time)
     notifications(time, filter)
   end
+  
+  # Publish a activity xml document to gnip for a give publisher
+  # You must be the owner of the publisher to publish
+  # activity_list is an array of activity objects
+  def publish(activity_list)
+    @connection.logger.info("Publishing activities for #{self.name}")
+    publisher_path = "/publishers/#{self.name}/activity.xml"
+    @connection.post(publisher_path, Gnip::Activity.list_to_xml(activity_list))
+  end
   ####
   
   def add_filter(name, full_data = true)

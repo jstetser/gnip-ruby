@@ -214,7 +214,16 @@ HEREDOC
       end
     end
 
-    # describe "publish method" do
-    # end
+    describe "publish method" do
+      it "should post activities as list successfully" do
+        now = Time.now
+        activity_list = []
+        activity_list << Gnip::Activity.new("joe", "added_friend", now, "qwerty890")
+        activity_list << Gnip::Activity.new("jane", "added_application", now, "def456")
+        setup_mock_for_publishing(pub_activities_at(now))
+        response = @mock_publisher.publish(activity_list)
+        response.code.should == "200"
+      end
+    end
   end
 end
