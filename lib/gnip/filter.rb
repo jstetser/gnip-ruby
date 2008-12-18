@@ -1,13 +1,40 @@
 class Gnip::Filter
 
     attr_accessor :post_url
-    attr_reader :rules, :name, :full_data
+    attr_reader :rules, :name, :full_data, :publisher
 
     def initialize(name, full_data = true, publisher = nil)
         @name = name
         @full_data = full_data
         @rules = []
         @publisher = publisher
+    end
+    
+    def self.find(publisher, filter_name)
+      publisher.connection.logger.info("Getting filter #{filter_name}")
+      find_path = "/publishers/#{publisher.name}/filters/#{filter_name}.xml"
+      response, data = publisher.connection.get(find_path)
+      filter = nil
+      if (response.code == '200')
+          filter = Gnip::Filter.from_xml(data)
+      end
+      return [response, filter]
+    end
+    
+    def self.create(name, full_data = true, publisher = nil)
+      filter = new(name, full_data, publisher)
+      filter.publisher.connection.logger.info("Creating #{filter.class} with name #{filter.name}")
+      return filter.publisher.connection.post("#{publisher.prefix}/#{filter.uri}", filter.to_xml)
+    end
+    
+    def update
+      self.publisher.connection.logger.info("Creating #{self.class} with name #{self.name}")
+      return self.publisher.connection.put("/#{self.publisher.uri}/#{self.publisher.name}/#{self.uri}/#{self.name}.xml", self.to_xml)
+    end
+    
+    def destroy
+      self.publisher.connection.logger.info("Removing #{self.class} with name #{self.name}")
+      return self.publisher.connection.delete("/#{self.publisher.uri}/#{self.publisher.name}/#{self.uri}/#{self.name}.xml")
     end
 
     def uri

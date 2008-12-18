@@ -1,5 +1,5 @@
 class Gnip::Publisher
-  attr_reader :name, :filters
+  attr_reader :name, :filters, :connection
   attr_accessor :supported_rule_types
 
   def initialize(name, suppported_rule_types = [], connection = nil)
@@ -17,9 +17,9 @@ class Gnip::Publisher
   def activities(time = nil, filter = nil)
     timestamp = time ? time.to_gnip_bucket_id : 'current'
     if filter
-      _name, _endpoint = filter.name, "/#{self.uri}/#{self.name}/#{filter.uri}/#{filter.name}/activity/#{timestamp}.xml"
+      _name, _endpoint = filter.name, "#{self.prefix}/#{filter.uri}/#{filter.name}/activity/#{timestamp}.xml"
     else
-      _name, _endpoint = self.name, "/#{self.uri}/#{self.name}/activity/#{timestamp}.xml"
+      _name, _endpoint = self.name, "#{self.prefix}/activity/#{timestamp}.xml"
     end
     log_action(_name, time, timestamp)
     fetch_and_parse(_endpoint)
@@ -39,9 +39,9 @@ class Gnip::Publisher
   def notifications(time = nil, filter = nil)
     timestamp = time ? time.to_gnip_bucket_id : 'current'
     if filter
-      _name, _endpoint = filter.name, "/#{self.uri}/#{self.name}/#{filter.uri}/#{filter.name}/notification/#{timestamp}.xml"
+      _name, _endpoint = filter.name, "#{self.prefix}/#{filter.uri}/#{filter.name}/notification/#{timestamp}.xml"
     else
-      _name, _endpoint = self.name, "/#{self.uri}/#{self.name}/notification/#{timestamp}.xml"
+      _name, _endpoint = self.name, "#{self.prefix}/notification/#{timestamp}.xml"
     end
     log_action(_name, time, timestamp)
     fetch_and_parse(_endpoint)
@@ -66,15 +66,24 @@ class Gnip::Publisher
   ####
   
   def add_filter(name, full_data = true)
-    self.filters[name] = Gnip::Filter.new(name, full_data, self)
+    self.filters[name] = Gnip::Filter.create(name, full_data, self)
   end
   
-  def delete_filter(name)
-    self.filters.delete(name)
+  def get_filter(name)
+    Gnip::Filter.find(self, name)
+  end
+  
+  def delete_filter(filter)
+    filter = self.filters.delete(filter) if filter.is_a?(String) 
+    return filter.destroy
   end
   
   def uri
     'publishers'
+  end
+
+  def prefix
+    "/#{self.uri}/#{self.name}"
   end
 
   def to_xml()
@@ -110,6 +119,7 @@ class Gnip::Publisher
   end
 
   private
+
 
   def path
     "/publishers/#{name}/activity"

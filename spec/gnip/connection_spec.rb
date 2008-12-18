@@ -66,52 +66,7 @@ describe Gnip::Connection do
 
     end
 
-    describe "Filter" do
-        it "should create a new filter for given filter xml" do
-            filter = Gnip::Filter.new('new-filter')
-            setup_mock_for_filter_create(filter)
-            response = @gnip_connection.create_filter(@mock_publisher, filter)
-            response.code.should == "200"
-        end
 
-        it "should find a filter for given name" do
-            filter_name = 'some-existing-filter'
-            setup_mock_for_filter_find(filter_name)
-            response, filter = @gnip_connection.get_filter(@mock_publisher, filter_name)
-            response.code.should == "200"
-            filter.name.should == 'some-existing-filter'
-        end
-
-        it "should update a filter for given filter" do
-            filter = Gnip::Filter.new('existing-filter')
-            setup_mock_for_filter_update(filter)
-            response = @gnip_connection.update_filter(@mock_publisher, filter)
-            response.code.should == "200"
-        end
-
-        it 'should add a rule to the given filter' do
-            filter = Gnip::Filter.new('existing-filter')
-            rule = Gnip::Rule.new('actor', 'testActor')
-            setup_mock_for_add_rule(filter, rule)
-            response = @gnip_connection.add_rule(@mock_publisher, filter, rule)
-            response.code.should == "200"
-        end
-
-        it 'should remove a rule from the given filter' do
-            filter = Gnip::Filter.new('existing-filter')
-            rule = Gnip::Rule.new('actor', 'testUid')
-            setup_mock_for_delete_rule(filter, rule)
-            response = @gnip_connection.remove_rule(@mock_publisher, filter, rule)
-            response.code.should == "200"
-        end
-
-        it "should delete a filter for given filter" do
-            filter = Gnip::Filter.new('existing-filter')
-            setup_mock_for_filter_delete(filter)
-            response = @gnip_connection.remove_filter(@mock_publisher, filter)
-            response.code.should == "200"
-        end
-    end
 
     describe "Publisher" do
 

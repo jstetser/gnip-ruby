@@ -59,56 +59,58 @@ HEREDOC
     publisher1.should == publisher2
   end
   
-  describe "add_filter method" do
-    before do
-      @publisher = Gnip::Publisher.new('url-safe-name')
-    end
-    
-    it "should create a new filter and add it to the publisher's list of filters" do
-      @publisher.filters.size.should be(0)
-      @publisher.add_filter("test_filter", true)
-      @publisher.filters.size.should_not be(0)
-      
-      @publisher.filters["test_filter"].should == Gnip::Filter.new("test_filter", true, @publisher)
-    end
-  end
-  
-  describe "delete_filter method" do
-    before do
-      @publisher = Gnip::Publisher.new('url-safe-name')
-    end
-    
-    it "should remove the filter named in the list" do
-      @publisher.add_filter("test_filter", true)
-      @publisher.filters.size.should be(1)
-      
-      @publisher.delete_filter("test_filter")   
-      @publisher.filters.size.should be(0)
-      @publisher.filters["test_filter"].should be(nil)
-    end
-  end
-        
-  describe "filters" do
-    before do
-      @publisher = Gnip::Publisher.new('url-safe-name')
-    end
-    
-    it "should return an empty hash if there are no filters" do
-      @publisher.filters.should be_is_a(Hash)
-      @publisher.filters.should == {}
-    end
-  
-    it "should return a hash of filters if any are defined" do
-      @publisher.add_filter("test_filter", true)
-      @publisher.filters.should be_is_a(Hash)
-      @publisher.filters.should_not be_empty
-    end
-    
-    it "should return the appropriate filter when using filters[name] syntax" do
-      @publisher.add_filter("test_filter", true)
-      @publisher.filters["test_filter"].should == Gnip::Filter.new("test_filter", true, @publisher)
-    end
-  end
+  # describe "add_filter method" do
+  #   before do
+  #     @gnip_config = Gnip::Config.new("user", "password", "s.gnipcentral.com", false)
+  #     @gnip_connection = Gnip::Connection.new(@gnip_config)
+  #     @publisher = Gnip::Publisher.new('url-safe-name', [], @gnip_connection)
+  #   end
+  #   
+  #   it "should create a new filter and add it to the publisher's list of filters" do
+  #     @publisher.filters.size.should be(0)
+  #     @publisher.add_filter("test_filter", true)
+  #     @publisher.filters.size.should_not be(0)
+  #     
+  #     @publisher.filters["test_filter"].should == Gnip::Filter.new("test_filter", true, @publisher)
+  #   end
+  # end
+  # 
+  # describe "delete_filter method" do
+  #   before do
+  #     @publisher = Gnip::Publisher.new('url-safe-name')
+  #   end
+  #   
+  #   it "should remove the filter named in the list" do
+  #     @publisher.add_filter("test_filter", true)
+  #     @publisher.filters.size.should be(1)
+  #     
+  #     @publisher.delete_filter("test_filter")   
+  #     @publisher.filters.size.should be(0)
+  #     @publisher.filters["test_filter"].should be(nil)
+  #   end
+  # end
+  #       
+  # describe "filters" do
+  #   before do
+  #     @publisher = Gnip::Publisher.new('url-safe-name')
+  #   end
+  #   
+  #   it "should return an empty hash if there are no filters" do
+  #     @publisher.filters.should be_is_a(Hash)
+  #     @publisher.filters.should == {}
+  #   end
+  # 
+  #   it "should return a hash of filters if any are defined" do
+  #     @publisher.add_filter("test_filter", true)
+  #     @publisher.filters.should be_is_a(Hash)
+  #     @publisher.filters.should_not be_empty
+  #   end
+  #   
+  #   it "should return the appropriate filter when using filters[name] syntax" do
+  #     @publisher.add_filter("test_filter", true)
+  #     @publisher.filters["test_filter"].should == Gnip::Filter.new("test_filter", true, @publisher)
+  #   end
+  # end
   
   describe "A test publisher" do
     before do 
@@ -224,6 +226,57 @@ HEREDOC
         response = @mock_publisher.publish(activity_list)
         response.code.should == "200"
       end
+    end
+    
+    describe "with filters" do
+        it "should create a new filter for given filter xml" do
+            filter = Gnip::Filter.new('new-filter', true, @mock_publisher)
+            setup_mock_for_filter_create(filter)
+            response = @mock_publisher.add_filter('new-filter', true)
+            response.code.should == "200"
+        end
+
+        it "should find a filter for given name" do
+          filter_name = 'existing-filter'
+          filter = Gnip::Filter.new(filter_name, true, @mock_publisher)
+          @mock_publisher.filters[filter_name] = filter            
+          setup_mock_for_filter_find(filter_name)
+            response, filter = @mock_publisher.get_filter(filter_name)
+            response.code.should == "200"
+            filter.name.should == filter_name
+        end
+
+        it "should update a filter for given filter" do
+          filter = Gnip::Filter.new('existing-filter', true, @mock_publisher)
+          
+          setup_mock_for_filter_update(filter)
+          response = filter.update
+          response.code.should == "200"
+        end
+
+        # it 'should add a rule to the given filter' do
+        #     filter = Gnip::Filter.new('existing-filter')
+        #     rule = Gnip::Rule.new('actor', 'testActor')
+        #     setup_mock_for_add_rule(filter, rule)
+        #     response = @gnip_connection.add_rule(@mock_publisher, filter, rule)
+        #     response.code.should == "200"
+        # end
+        # 
+        # it 'should remove a rule from the given filter' do
+        #     filter = Gnip::Filter.new('existing-filter')
+        #     rule = Gnip::Rule.new('actor', 'testUid')
+        #     setup_mock_for_delete_rule(filter, rule)
+        #     response = @gnip_connection.remove_rule(@mock_publisher, filter, rule)
+        #     response.code.should == "200"
+        # end
+
+        it "should delete a filter for given filter" do
+          filter = Gnip::Filter.new('existing-filter', true, @mock_publisher)
+          @mock_publisher.filters['existing-filter'] = filter
+          setup_mock_for_filter_delete(filter)
+          response = @mock_publisher.delete_filter('existing-filter')
+          response.code.should == "200"
+        end
     end
   end
 end
