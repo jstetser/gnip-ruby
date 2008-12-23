@@ -44,26 +44,17 @@ class Gnip::Filter < Gnip::Base
     def add_rule(type, value)
         @rules << Gnip::Rule.new(type, value)
     end
+    
+    def add_rule!(type, value)
+      add_rule(type, value) && update
+    end
 
     def remove_rule(type, value)
         @rules.delete(Gnip::Rule.new(type, value))
     end
     
-    # def rules
-    #   logger.info("Getting list of rules for filter #{self.name}")
-    #   return @rules unless nil
-    #   res, data = get("/#{publisher.uri}/#{publisher.name}/filters/#{filter.name}/rules")
-    #   @rules = rules_from_xml(data)
-    # end
-    
-    def self.add_rule(publisher, filter, rule)
-        logger.info("Adding rule #{rule.value} to filter #{filter.name}")
-        return post("/#{publisher.uri}/#{publisher.name}/filters/#{filter.name}/rules.xml", rule.to_xml)
-    end
-
-    def self.remove_rule(publisher, filter, rule)
-        logger.info("Removing rule #{rule.value} from filter #{filter.name}")
-        return delete("/#{publisher.uri}/#{publisher.name}/filters/#{filter.name}/rules?type=#{CGI.escape(rule.type)}&value=#{CGI.escape(rule.value)}") if rule
+    def remove_rule!(type, value)
+      remove_rule(type, value) && update
     end
 
     def to_xml()

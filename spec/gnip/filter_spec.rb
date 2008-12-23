@@ -1,6 +1,10 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 describe Gnip::Filter do
+  before do
+    prepare_mock_environment
+  end
+  
   it 'should know the URI of its activity stream' do
     Gnip::Filter.new('url-safe-name').activity_stream_uri.should == "filters/url-safe-name/activity"
   end 
@@ -119,5 +123,21 @@ HEREDOC
     filter.rules.size.should == 2
     filter.remove_rule('actor',"jack")
     filter.rules.size.should == 1
+  end
+  
+  it 'should have a method for adding a rule' do
+    filter = Gnip::Filter.new('existing-filter')
+    filter.add_rule('actor', 'testActor')
+    filter.rules.size.should == 1
+  end
+  
+  it 'should have a method for removing a rule' do
+    filter = Gnip::Filter.new('existing-filter')
+    rule = Gnip::Rule.new('actor', 'testUid')
+    filter.add_rule(rule.type, rule.value)
+    filter.rules.size.should == 1
+    
+    filter.remove_rule(rule.type, rule.value)
+    filter.rules.size.should == 0
   end
 end

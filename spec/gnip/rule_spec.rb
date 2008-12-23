@@ -43,20 +43,4 @@ HEREDOC
      response = Gnip::Rule.find(@mock_publisher, filter, rule)
      response.should == rule
    end
-   
-   # it 'should add a rule to the given filter' do
-   #     filter = Gnip::Filter.new('existing-filter')
-   #     rule = Gnip::Rule.new('actor', 'testActor')
-   #     setup_mock_for_add_rule(filter, rule)
-   #     response = @gnip_connection.add_rule(@mock_publisher, filter, rule)
-   #     response.code.should == "200"
-   # end
-   # 
-   # it 'should remove a rule from the given filter' do
-   #     filter = Gnip::Filter.new('existing-filter')
-   #     rule = Gnip::Rule.new('actor', 'testUid')
-   #     setup_mock_for_delete_rule(filter, rule)
-   #     response = @gnip_connection.remove_rule(@mock_publisher, filter, rule)
-   #     response.code.should == "200"
-   # end
 end
