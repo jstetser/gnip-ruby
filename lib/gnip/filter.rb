@@ -1,4 +1,4 @@
-class Gnip::Filter
+class Gnip::Filter < Gnip::Base
 
     attr_accessor :post_url
     attr_reader :rules, :name, :full_data, :publisher
@@ -11,9 +11,9 @@ class Gnip::Filter
     end
     
     def self.find(publisher, filter_name)
-      publisher.connection.logger.info("Getting filter #{filter_name}")
+      logger.info("Getting filter #{filter_name}")
       find_path = "/publishers/#{publisher.name}/filters/#{filter_name}.xml"
-      response, data = publisher.connection.get(find_path)
+      response, data = self.new(filter_name).get(find_path)
       filter = nil
       if (response.code == '200')
           filter = Gnip::Filter.from_xml(data)
@@ -23,18 +23,18 @@ class Gnip::Filter
     
     def self.create(name, full_data = true, publisher = nil)
       filter = new(name, full_data, publisher)
-      filter.publisher.connection.logger.info("Creating #{filter.class} with name #{filter.name}")
-      return filter.publisher.connection.post("#{publisher.prefix}/#{filter.uri}", filter.to_xml)
+      logger.info("Creating #{filter.class} with name #{filter.name}")
+      return filter.post("#{publisher.prefix}/#{filter.uri}", filter.to_xml)
     end
     
     def update
-      self.publisher.connection.logger.info("Creating #{self.class} with name #{self.name}")
-      return self.publisher.connection.put("/#{self.publisher.uri}/#{self.publisher.name}/#{self.uri}/#{self.name}.xml", self.to_xml)
+      logger.info("Creating #{self.class} with name #{self.name}")
+      return put("/#{self.publisher.uri}/#{self.publisher.name}/#{self.uri}/#{self.name}.xml", self.to_xml)
     end
     
     def destroy
-      self.publisher.connection.logger.info("Removing #{self.class} with name #{self.name}")
-      return self.publisher.connection.delete("/#{self.publisher.uri}/#{self.publisher.name}/#{self.uri}/#{self.name}.xml")
+      logger.info("Removing #{self.class} with name #{self.name}")
+      return delete("/#{self.publisher.uri}/#{self.publisher.name}/#{self.uri}/#{self.name}.xml")
     end
 
     def uri
@@ -47,6 +47,23 @@ class Gnip::Filter
 
     def remove_rule(type, value)
         @rules.delete(Gnip::Rule.new(type, value))
+    end
+    
+    # def rules
+    #   logger.info("Getting list of rules for filter #{self.name}")
+    #   return @rules unless nil
+    #   res, data = get("/#{publisher.uri}/#{publisher.name}/filters/#{filter.name}/rules")
+    #   @rules = rules_from_xml(data)
+    # end
+    
+    def self.add_rule(publisher, filter, rule)
+        logger.info("Adding rule #{rule.value} to filter #{filter.name}")
+        return post("/#{publisher.uri}/#{publisher.name}/filters/#{filter.name}/rules.xml", rule.to_xml)
+    end
+
+    def self.remove_rule(publisher, filter, rule)
+        logger.info("Removing rule #{rule.value} from filter #{filter.name}")
+        return delete("/#{publisher.uri}/#{publisher.name}/filters/#{filter.name}/rules?type=#{CGI.escape(rule.type)}&value=#{CGI.escape(rule.value)}") if rule
     end
 
     def to_xml()
@@ -109,11 +126,6 @@ class Gnip::Filter
     end
 
     private
-
-    # The logger this object should use.
-    def logger
-        Gnip.logger
-    end
 
     def self.value_to_boolean(value)
         if value == true || value == false

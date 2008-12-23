@@ -120,7 +120,7 @@ HEREDOC
       
       @mock_publisher_name = 'mock_pub'
       @mock_filter_name = 'mock_filter'
-      @mock_publisher = Gnip::Publisher.new(@mock_publisher_name, [], @gnip_connection)
+      @mock_publisher = Gnip::Publisher.new(@mock_publisher_name, [])
       @mock_filter = Gnip::Filter.new(@mock_filter_name, true, @mock_publisher)
 
       @server_now = Time.now.utc
@@ -131,14 +131,14 @@ HEREDOC
       it "should have a find method that returns a publisher for given publisher name" do
         publisher_name = 'existing-publisher'
         setup_mock_for_publisher_get(publisher_name)
-        publisher = Gnip::Publisher.find(publisher_name, @gnip_connection)
+        publisher = Gnip::Publisher.find(publisher_name)
         publisher.name.should == publisher_name
       end
       
       it "should have a create method" do
-        publisher = Gnip::Publisher.new('new-publisher', [], @gnip_connection)
+        publisher = Gnip::Publisher.new('new-publisher', [])
         setup_mock_for_publisher_create(publisher)
-        response = Gnip::Publisher.create('new-publisher', [], @gnip_connection)
+        response = Gnip::Publisher.create('new-publisher', [])
         response.should == publisher
       end
     end
@@ -146,14 +146,14 @@ HEREDOC
     describe "instance" do
     
       it "should have a create method" do
-        publisher = Gnip::Publisher.new('new-publisher', [], @gnip_connection)
+        publisher = Gnip::Publisher.new('new-publisher', [])
         setup_mock_for_publisher_create(publisher)
         response = publisher.create
         response.should == publisher
       end
       
       it "should have an update method" do
-        publisher = Gnip::Publisher.new('new-publisher', [], @gnip_connection)
+        publisher = Gnip::Publisher.new('new-publisher', [])
         setup_mock_for_publisher_update(publisher)
         response = publisher.update
         response.code.should == "200"

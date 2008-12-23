@@ -2,6 +2,7 @@ class Gnip::Connection < Gnip::Base
 
     def initialize(config)
         @gnip_config = config
+        Gnip.connection = self
     end
 
     def server_time
@@ -35,13 +36,11 @@ class Gnip::Connection < Gnip::Base
     end
 
     def create_publisher(publisher)
-        logger.info("Creating #{publisher.class} with name #{publisher.name}")
-        return post("/#{publisher.uri}", publisher.to_xml)
+      publisher.create
     end
 
     def update_publisher(publisher)
-        logger.info("Updating #{publisher.class} with name #{publisher.name}")
-        return put("/#{publisher.uri}/#{publisher.name}/#{publisher.name}.xml", publisher.to_xml)
+      publisher.update
     end
 
     def add_rule(publisher, filter, rule)
@@ -54,83 +53,7 @@ class Gnip::Connection < Gnip::Base
         return delete("/#{publisher.uri}/#{publisher.name}/filters/#{filter.name}/rules?type=#{CGI.escape(rule.type)}&value=#{CGI.escape(rule.value)}") if rule
     end
 
-    def head(path)
-        logger.debug('Doing HEAD')
-        return http.get(path, headers)
-    end
-
-    def get(path)
-        logger.debug('Doing GET')
-        response = http.get2(path, headers)
-        if (response.code == '200')
-            if (response['Content-Encoding'] == 'gzip')
-                logger.debug("Uncompressing the GET response")
-                data = uncompress(response.body)
-            else
-                data = response.body
-            end
-        end
-        logger.debug("GET result: #{data}")
-        return [response, data]
-    end
-
-    def post(path, data)
-        logger.debug("POSTing data: #{data}")
-        response = http.post2(path, compress(data), headers)
-        return response.code == '200'
-    end
-
-    def put(path, data)
-        logger.debug("PUTing data: #{data}")
-        return http.put2(path, compress(data), headers)
-    end
-
-    def delete(path)
-        logger.debug("Doing DELETE : #{path}")
-        return http.delete(path, headers)
-    end
-
     private
-
-    def http
-        hostname, port = @gnip_config.base_url.split(':')
-        port ||= 443
-
-        http = Net::HTTP.new(hostname, port)
-        http.read_timeout=@gnip_config.http_read_timeout
-        http.use_ssl = true if port == 443
-        return http
-    end
-
-    def headers
-        header_hash = {}
-        header_hash['Authorization'] = 'Basic ' + Base64::encode64("#{@gnip_config.user}:#{@gnip_config.password}")
-        header_hash['Content-Type'] = 'application/xml'
-        header_hash['User-Agent'] = 'Gnip-Client-Ruby/2.0.6'
-        if @gnip_config.use_gzip
-            header_hash['Content-Encoding'] = 'gzip'
-            header_hash['Accept-Encoding'] = 'gzip'
-        end
-        logger.debug("Gnip Connection Headers: #{header_hash}")
-        header_hash
-    end
-
-    def compress(data)
-        logger.debug("Gzipping data for request")
-        if @gnip_config.use_gzip
-            result = ''
-            gzip_writer = Zlib::GzipWriter.new(StringIO.new(result))
-            gzip_writer.write(data)
-            gzip_writer.close
-        else
-            result = data
-        end
-        result
-    end
-
-    def uncompress(data)
-        Zlib::GzipReader.new(StringIO.new(data)).read
-    end
 
     def self.publishers_from_xml(publishers_xml)
         return [] if publishers_xml.nil?

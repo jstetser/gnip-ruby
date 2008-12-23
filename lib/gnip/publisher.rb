@@ -1,42 +1,41 @@
-class Gnip::Publisher
-  attr_reader :name, :filters, :connection
+class Gnip::Publisher < Gnip::Base
+  attr_reader :name, :filters
   attr_accessor :supported_rule_types
 
-  def initialize(name, suppported_rule_types = [], connection = nil)
+  def initialize(name, suppported_rule_types = [])
     @name = name
     @supported_rule_types = suppported_rule_types
     @filters = {}
-    @connection = connection
   end
   
   ## API 
   
-  def self.find(publisher_name, connection)
-    connection.logger.info("Getting publisher #{publisher_name}")
+  def self.find(publisher_name)
+    Gnip::Base.logger.info("Getting publisher #{publisher_name}")
     get_path = "/publishers/#{publisher_name}.xml"
-    response, data = connection.get(get_path)
+    response, data = Gnip::Base.connection.get(get_path)
     publisher = nil
     if (response.code == '200')
       publisher = Gnip::Publisher.from_xml(data)
     else 
-      connection.logger.info("Received error response #{response.code}")
+      Gnip::Base.logger.info("Received error response #{response.code}")
       nil
     end
   end
   
-  def self.create(name, suppported_rule_types = [], connection = nil)
-    publisher = new(name, suppported_rule_types, connection)
+  def self.create(name, suppported_rule_types = [])
+    publisher = new(name, suppported_rule_types)
     publisher.create
   end
   
   def create
-    self.connection.logger.info("Creating #{self.class} with name #{self.name}")
-    return self if connection.post("/#{self.uri}", self.to_xml)
+    logger.info("Creating #{self.class} with name #{self.name}")
+    return self if post("/#{self.uri}", self.to_xml)
   end
   
   def update
-    connection.logger.info("Updating #{self.class} with name #{self.name}")
-    return connection.put("/#{self.uri}/#{self.name}/#{self.name}.xml", self.to_xml)
+    logger.info("Updating #{self.class} with name #{self.name}")
+    return put("/#{self.uri}/#{self.name}/#{self.name}.xml", self.to_xml)
   end
       
   # Gets the current activities for a publisher
@@ -87,9 +86,9 @@ class Gnip::Publisher
   # You must be the owner of the publisher to publish
   # activity_list is an array of activity objects
   def publish(activity_list)
-    @connection.logger.info("Publishing activities for #{self.name}")
+    logger.info("Publishing activities for #{self.name}")
     publisher_path = "/publishers/#{self.name}/activity.xml"
-    @connection.post(publisher_path, Gnip::Activity.list_to_xml(activity_list))
+    post(publisher_path, Gnip::Activity.list_to_xml(activity_list))
   end
   ####
   
@@ -154,12 +153,12 @@ class Gnip::Publisher
   end
   
   def log_action(name, time, timestamp)
-    @connection.logger.info("Timestamp for #{time} is #{timestamp}")
-    @connection.logger.info("Getting activities for #{name} at #{timestamp}")
+    logger.info("Timestamp for #{time} is #{timestamp}")
+    logger.info("Getting activities for #{name} at #{timestamp}")
   end
   
   def fetch_and_parse(endpoint)
-    response, activities_xml = @connection.get(endpoint)
+    response, activities_xml = get(endpoint)
     activities = []
     activities = Gnip::Activity.list_from_xml(activities_xml) if response.code == '200'
     return [response, activities]

@@ -32,6 +32,107 @@ class Gnip
   end
 
   class Gnip::Base
+    def self.config
+      Gnip.connection.config
+    end
+    
+    def config
+      self.class.config
+    end
+    
+    def self.connection
+      Gnip.connection
+    end
+    
+    def connection
+      self.class.connection
+    end
+    
+    def self.logger
+      Gnip.logger
+    end
+     
+    def logger
+      self.class.logger
+    end
+    
+    def head(path)
+        logger.debug('Doing HEAD')
+        return http.get(path, headers)
+    end
+
+    def get(path)
+        logger.debug('Doing GET')
+        response = http.get2(path, headers)
+        if (response.code == '200')
+            if (response['Content-Encoding'] == 'gzip')
+                logger.debug("Uncompressing the GET response")
+                data = uncompress(response.body)
+            else
+                data = response.body
+            end
+        end
+        logger.debug("GET result: #{data}")
+        return [response, data]
+    end
+
+    def post(path, data)
+        logger.debug("POSTing data: #{data}")
+        response = http.post2(path, compress(data), headers)
+        return response.code == '200'
+    end
+
+    def put(path, data)
+        logger.debug("PUTing data: #{data}")
+        return http.put2(path, compress(data), headers)
+    end
+
+    def delete(path)
+        logger.debug("Doing DELETE : #{path}")
+        return http.delete(path, headers)
+    end
+
+    protected
+
+    def http
+        hostname, port = config.base_url.split(':')
+        port ||= 443
+
+        http = Net::HTTP.new(hostname, port)
+        http.read_timeout=config.http_read_timeout
+        http.use_ssl = true if port == 443
+        return http
+    end
+
+    def headers
+        header_hash = {}
+        header_hash['Authorization'] = 'Basic ' + Base64::encode64("#{config.user}:#{config.password}")
+        header_hash['Content-Type'] = 'application/xml'
+        header_hash['User-Agent'] = 'Gnip-Client-Ruby/2.0.6'
+        if config.use_gzip
+            header_hash['Content-Encoding'] = 'gzip'
+            header_hash['Accept-Encoding'] = 'gzip'
+        end
+        logger.debug("Gnip Connection Headers: #{header_hash}")
+        header_hash
+    end
+
+    def compress(data)
+        logger.debug("Gzipping data for request")
+        if config.use_gzip
+            result = ''
+            gzip_writer = Zlib::GzipWriter.new(StringIO.new(result))
+            gzip_writer.write(data)
+            gzip_writer.close
+        else
+            result = data
+        end
+        result
+    end
+
+    def uncompress(data)
+        Zlib::GzipReader.new(StringIO.new(data)).read
+    end
   end
 
   dir = File.dirname(__FILE__)

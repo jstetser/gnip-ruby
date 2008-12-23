@@ -1,4 +1,4 @@
-class Gnip::Rule
+class Gnip::Rule < Gnip::Base
   include Comparable
 
   attr_reader :type, :value
