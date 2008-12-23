@@ -66,27 +66,7 @@ describe Gnip::Connection do
 
     end
 
-
-
-    describe "Publisher" do
-
-        it "should create a new publisher" do
-            publisher = Gnip::Publisher.new('new-publisher')
-            setup_mock_for_publisher_create(publisher)
-            response = @gnip_connection.create_publisher(publisher)
-            response.code.should == "200"
-        end
-
-        it "should return a  publisher for given publisher name" do
-            publisher_name = 'existing-publsher'
-            setup_mock_for_publisher_get(publisher_name)
-            response, publisher = @gnip_connection.get_publisher(publisher_name)
-            response.code.should == "200"
-            publisher.name.should == publisher_name
-        end
-    end
-
-    describe "Publihsers" do
+    describe "Publishers" do
         it 'should list existing publishers' do
             setup_mock_for_publishers_get([@mock_publisher])
             response, publishers = @gnip_connection.get_publishers

@@ -11,10 +11,32 @@ class Gnip::Publisher
   
   ## API 
   
+  def self.find(publisher_name, connection)
+    connection.logger.info("Getting publisher #{publisher_name}")
+    get_path = "/publishers/#{publisher_name}.xml"
+    response, data = connection.get(get_path)
+    publisher = nil
+    if (response.code == '200')
+      publisher = Gnip::Publisher.from_xml(data)
+    else 
+      connection.logger.info("Received error response #{response.code}")
+      nil
+    end
+  end
+  
   def self.create(name, suppported_rule_types = [], connection = nil)
-    publisher = new(name, suppported_rule_types = [], connection = nil)
-    connection.logger.info("Creating #{publisher.class} with name #{publisher.name}")
-    return connection.post("/#{publisher.uri}", publisher.to_xml)
+    publisher = new(name, suppported_rule_types, connection)
+    publisher.create
+  end
+  
+  def create
+    self.connection.logger.info("Creating #{self.class} with name #{self.name}")
+    return self if connection.post("/#{self.uri}", self.to_xml)
+  end
+  
+  def update
+    connection.logger.info("Updating #{self.class} with name #{self.name}")
+    return connection.put("/#{self.uri}/#{self.name}/#{self.name}.xml", self.to_xml)
   end
       
   # Gets the current activities for a publisher

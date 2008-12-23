@@ -20,16 +20,7 @@ class Gnip::Connection < Gnip::Base
     end
 
     def get_publisher(publisher_name)
-        logger.info("Getting publisher #{publisher_name}")
-        get_path = "/publishers/#{publisher_name}.xml"
-        response, data = get(get_path)
-        publisher = nil
-        if (response.code == '200')
-            publisher = Gnip::Publisher.from_xml(data)
-        else 
-            logger.info("Received error response #{response.code}")
-        end
-        return [response, publisher]
+      Gnip::Publisher.find(publisher_name, self)
     end
 
     def get_publishers()
@@ -85,7 +76,8 @@ class Gnip::Connection < Gnip::Base
 
     def post(path, data)
         logger.debug("POSTing data: #{data}")
-        return http.post2(path, compress(data), headers)
+        response = http.post2(path, compress(data), headers)
+        return response.code == '200'
     end
 
     def put(path, data)

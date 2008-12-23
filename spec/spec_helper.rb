@@ -56,6 +56,10 @@ def setup_mock_for_publisher_create(expected_publisher)
     mock_http.should_receive(:post2).with("/publishers", expected_publisher.to_xml, headers).and_return(successful_response)
 end
 
+def setup_mock_for_publisher_update(expected_publisher)
+    mock_http.should_receive(:put2).with("/publishers/#{expected_publisher.name}/#{expected_publisher.name}.xml", expected_publisher.to_xml, headers).and_return(successful_response)
+end
+
 def setup_mock_for_filter_create(expected_filter)
     mock_http.should_receive(:post2).with("/publishers/#{@mock_publisher_name}/filters", expected_filter.to_xml, headers).and_return(successful_response)
 end

@@ -111,6 +111,7 @@ HEREDOC
   #     @publisher.filters["test_filter"].should == Gnip::Filter.new("test_filter", true, @publisher)
   #   end
   # end
+
   
   describe "A test publisher" do
     before do 
@@ -125,115 +126,149 @@ HEREDOC
       @server_now = Time.now.utc
       @activities = pub_activities
     end
-  
-    describe "activities method" do
     
-      it "should get activities per publisher for a given time" do
-        setup_mock_for_publisher(@activities, @server_now)
-        response, activities = @mock_publisher.activities(@server_now)
-        response.code.should == '200'
-        Gnip::Activity.list_to_xml(activities).should == @activities
+    describe "class" do
+      it "should have a find method that returns a publisher for given publisher name" do
+        publisher_name = 'existing-publisher'
+        setup_mock_for_publisher_get(publisher_name)
+        publisher = Gnip::Publisher.find(publisher_name, @gnip_connection)
+        publisher.name.should == publisher_name
       end
       
-      it "should get current activities per publisher " do
-        setup_mock_for_publisher(@activities)
-        response, activities = @mock_publisher.activities
-        response.code.should == '200'
-        Gnip::Activity.list_to_xml(activities).should == @activities
-      end
-    
-      it "should be aliased as get_activities" do
-        setup_mock_for_publisher(@activities, @server_now)
-        response, activities = @mock_publisher.get_activities(@server_now)
-        response.code.should == '200'
-        Gnip::Activity.list_to_xml(activities).should == @activities
-      end
-    
-      it "should get activities per filter for a given time if a filter is given" do
-        setup_mock_for_filter(@activities, @server_now)
-        response, activities = @mock_publisher.activities(@server_now, @mock_filter)
-        response.code.should == '200'
-        Gnip::Activity.list_to_xml(activities).should == @activities
-      end
-      
-      it "should get current activities per filter if a filter is given w/o a time" do
-        setup_mock_for_filter(@activities)
-        response, activities = @mock_publisher.activities(nil, @mock_filter)
-        response.code.should == '200'
-        Gnip::Activity.list_to_xml(activities).should == @activities
-      end
-    
-      it "should be accessible as get_filtered_activities" do
-        setup_mock_for_filter(@activities, @server_now)
-        response, activities = @mock_publisher.get_filtered_activities(@mock_filter, @server_now)
-        response.code.should == '200'
-        Gnip::Activity.list_to_xml(activities).should == @activities
+      it "should have a create method" do
+        publisher = Gnip::Publisher.new('new-publisher', [], @gnip_connection)
+        setup_mock_for_publisher_create(publisher)
+        response = Gnip::Publisher.create('new-publisher', [], @gnip_connection)
+        response.should == publisher
       end
     end
-  
-    describe "notifications method" do
     
-      it "should get notifications per publisher for a given time" do
-        setup_mock_notification_for_publisher( @activities, @server_now)
-        response, activities = @mock_publisher.notifications(@server_now)
-        response.code.should == '200'
-        Gnip::Activity.list_to_xml(activities).should == @activities
+    describe "instance" do
+    
+      it "should have a create method" do
+        publisher = Gnip::Publisher.new('new-publisher', [], @gnip_connection)
+        setup_mock_for_publisher_create(publisher)
+        response = publisher.create
+        response.should == publisher
       end
       
-      it "should get current notifications per publisher " do
-        setup_mock_notification_for_publisher( @activities)
-        response, activities = @mock_publisher.notifications
-        response.code.should == '200'
-        Gnip::Activity.list_to_xml(activities).should == @activities
-      end
-      
-      it "should be aliased as get_notifications" do
-        setup_mock_notification_for_publisher( @activities, @server_now)
-        response, activities = @mock_publisher.get_notifications(@server_now)
-        response.code.should == '200'
-        Gnip::Activity.list_to_xml(activities).should == @activities
-      end
-      
-      it "should get notifications per filter for a given time if a filter is given" do
-        setup_mock_notification_for_filter(@activities, @server_now)
-        response, activities = @mock_publisher.notifications(@server_now, @mock_filter)
-        response.code.should == '200'
-        Gnip::Activity.list_to_xml(activities).should == @activities
-      end
-      
-      it "should get current notifications per filter if a filter is given w/o a time" do
-        setup_mock_notification_for_filter(@activities)
-        response, activities = @mock_publisher.notifications(nil, @mock_filter)
-        response.code.should == '200'
-        Gnip::Activity.list_to_xml(activities).should == @activities
-      end
-      
-      it "should be accessible as get_filtered_notifications" do
-        setup_mock_notification_for_filter(@activities, @server_now)
-        response, activities = @mock_publisher.get_filtered_notifications(@mock_filter, @server_now)
-        response.code.should == '200'
-        Gnip::Activity.list_to_xml(activities).should == @activities
-      end
-    end
-
-    describe "publish method" do
-      it "should post activities as list successfully" do
-        now = Time.now
-        activity_list = []
-        activity_list << Gnip::Activity.new("joe", "added_friend", now, "qwerty890")
-        activity_list << Gnip::Activity.new("jane", "added_application", now, "def456")
-        setup_mock_for_publishing(pub_activities_at(now))
-        response = @mock_publisher.publish(activity_list)
+      it "should have an update method" do
+        publisher = Gnip::Publisher.new('new-publisher', [], @gnip_connection)
+        setup_mock_for_publisher_update(publisher)
+        response = publisher.update
         response.code.should == "200"
       end
-    end
+  
+      describe "activities method" do
     
-    describe "with filters" do
+        it "should get activities per publisher for a given time" do
+          setup_mock_for_publisher(@activities, @server_now)
+          response, activities = @mock_publisher.activities(@server_now)
+          response.code.should == '200'
+          Gnip::Activity.list_to_xml(activities).should == @activities
+        end
+        
+
+      
+        it "should get current activities per publisher " do
+          setup_mock_for_publisher(@activities)
+          response, activities = @mock_publisher.activities
+          response.code.should == '200'
+          Gnip::Activity.list_to_xml(activities).should == @activities
+        end
+    
+        it "should be aliased as get_activities" do
+          setup_mock_for_publisher(@activities, @server_now)
+          response, activities = @mock_publisher.get_activities(@server_now)
+          response.code.should == '200'
+          Gnip::Activity.list_to_xml(activities).should == @activities
+        end
+    
+        it "should get activities per filter for a given time if a filter is given" do
+          setup_mock_for_filter(@activities, @server_now)
+          response, activities = @mock_publisher.activities(@server_now, @mock_filter)
+          response.code.should == '200'
+          Gnip::Activity.list_to_xml(activities).should == @activities
+        end
+      
+        it "should get current activities per filter if a filter is given w/o a time" do
+          setup_mock_for_filter(@activities)
+          response, activities = @mock_publisher.activities(nil, @mock_filter)
+          response.code.should == '200'
+          Gnip::Activity.list_to_xml(activities).should == @activities
+        end
+    
+        it "should be accessible as get_filtered_activities" do
+          setup_mock_for_filter(@activities, @server_now)
+          response, activities = @mock_publisher.get_filtered_activities(@mock_filter, @server_now)
+          response.code.should == '200'
+          Gnip::Activity.list_to_xml(activities).should == @activities
+        end
+      end
+  
+      describe "notifications method" do
+    
+        it "should get notifications per publisher for a given time" do
+          setup_mock_notification_for_publisher( @activities, @server_now)
+          response, activities = @mock_publisher.notifications(@server_now)
+          response.code.should == '200'
+          Gnip::Activity.list_to_xml(activities).should == @activities
+        end
+      
+        it "should get current notifications per publisher " do
+          setup_mock_notification_for_publisher( @activities)
+          response, activities = @mock_publisher.notifications
+          response.code.should == '200'
+          Gnip::Activity.list_to_xml(activities).should == @activities
+        end
+      
+        it "should be aliased as get_notifications" do
+          setup_mock_notification_for_publisher( @activities, @server_now)
+          response, activities = @mock_publisher.get_notifications(@server_now)
+          response.code.should == '200'
+          Gnip::Activity.list_to_xml(activities).should == @activities
+        end
+      
+        it "should get notifications per filter for a given time if a filter is given" do
+          setup_mock_notification_for_filter(@activities, @server_now)
+          response, activities = @mock_publisher.notifications(@server_now, @mock_filter)
+          response.code.should == '200'
+          Gnip::Activity.list_to_xml(activities).should == @activities
+        end
+      
+        it "should get current notifications per filter if a filter is given w/o a time" do
+          setup_mock_notification_for_filter(@activities)
+          response, activities = @mock_publisher.notifications(nil, @mock_filter)
+          response.code.should == '200'
+          Gnip::Activity.list_to_xml(activities).should == @activities
+        end
+      
+        it "should be accessible as get_filtered_notifications" do
+          setup_mock_notification_for_filter(@activities, @server_now)
+          response, activities = @mock_publisher.get_filtered_notifications(@mock_filter, @server_now)
+          response.code.should == '200'
+          Gnip::Activity.list_to_xml(activities).should == @activities
+        end
+      end
+
+      describe "publish method" do
+        it "should post activities as list successfully" do
+          now = Time.now
+          activity_list = []
+          activity_list << Gnip::Activity.new("joe", "added_friend", now, "qwerty890")
+          activity_list << Gnip::Activity.new("jane", "added_application", now, "def456")
+          setup_mock_for_publishing(pub_activities_at(now))
+          response = @mock_publisher.publish(activity_list)
+          response.should == true
+        end
+      end
+    
+      describe "with filters" do
         it "should create a new filter for given filter xml" do
             filter = Gnip::Filter.new('new-filter', true, @mock_publisher)
             setup_mock_for_filter_create(filter)
             response = @mock_publisher.add_filter('new-filter', true)
-            response.code.should == "200"
+            response.should == true
         end
 
         it "should find a filter for given name" do
@@ -277,6 +312,7 @@ HEREDOC
           response = @mock_publisher.delete_filter('existing-filter')
           response.code.should == "200"
         end
+      end
     end
   end
 end
