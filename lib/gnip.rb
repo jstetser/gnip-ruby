@@ -75,22 +75,30 @@ class Gnip
         logger.debug("GET result: #{data}")
         return [response, data]
     end
+    
+    def self.get(path); Gnip::Base.new().get(path); end
 
     def post(path, data)
         logger.debug("POSTing data: #{data}")
         response = http.post2(path, compress(data), headers)
         return response.code == '200'
     end
+    
+    def self.post(path, data); Gnip::Base.new().post(path, data); end
 
     def put(path, data)
         logger.debug("PUTing data: #{data}")
         return http.put2(path, compress(data), headers)
     end
+    
+    def self.put(path, data); Gnip::Base.new().put(path, data); end
 
     def delete(path)
         logger.debug("Doing DELETE : #{path}")
         return http.delete(path, headers)
     end
+    
+    def self.delete(path); Gnip::Base.new().delete(path); end
 
     protected
 
