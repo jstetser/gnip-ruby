@@ -168,8 +168,6 @@ HEREDOC
           Gnip::Activity.list_to_xml(activities).should == @activities
         end
         
-
-      
         it "should get current activities per publisher " do
           setup_mock_for_publisher(@activities)
           response, activities = @mock_publisher.activities
