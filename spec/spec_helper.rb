@@ -7,6 +7,19 @@ require "#{dir}/../lib/gnip.rb"
 # This is here to allow spec helpers to work with spec_server
 $LOAD_PATH.unshift "#{dir}/../lib"
 
+def prepare_mock_environment
+  @gnip_config = Gnip::Config.new("user", "password", "s.gnipcentral.com", false)
+  @gnip_connection = Gnip::Connection.new(@gnip_config)
+  
+  @mock_publisher_name = 'mock_pub'
+  @mock_filter_name = 'mock_filter'
+  @mock_publisher = Gnip::Publisher.new(@mock_publisher_name, [])
+  @mock_filter = Gnip::Filter.new(@mock_filter_name, true, @mock_publisher)
+
+  @server_now = Time.now.utc
+  @activities = pub_activities
+end
+
 def expected_gnip_headers_for_last_poll_time(last_poll_time_server)
   expected_headers = {'AUTHORIZATION' => 'Basic ' + Base64::encode64("#{DEMO_USERNAME}:#{DEMO_PASSWORD}")}
   expected_headers.merge!({'IF_MODIFIED_SINCE' => last_poll_time_server.httpdate}) unless last_poll_time_server.nil?
@@ -62,6 +75,12 @@ end
 
 def setup_mock_for_filter_create(expected_filter)
     mock_http.should_receive(:post2).with("/publishers/#{@mock_publisher_name}/filters", expected_filter.to_xml, headers).and_return(successful_response)
+end
+
+def setup_mock_for_find_rule(filter, rule)
+    mock_response = successful_response
+    mock_response.should_receive(:body).with(no_args).and_return(Gnip::Rule.new(rule.type, rule.value).to_xml)
+    mock_http.should_receive(:get2).with("/publishers/#{@mock_publisher_name}/filters/#{filter.name}/rules.xml?type=#{rule.type}&value=#{rule.value}", headers).and_return(mock_response)
 end
 
 def setup_mock_for_add_rule(filter, rule)

@@ -115,16 +115,7 @@ HEREDOC
   
   describe "A test publisher" do
     before do 
-      @gnip_config = Gnip::Config.new("user", "password", "s.gnipcentral.com", false)
-      @gnip_connection = Gnip::Connection.new(@gnip_config)
-      
-      @mock_publisher_name = 'mock_pub'
-      @mock_filter_name = 'mock_filter'
-      @mock_publisher = Gnip::Publisher.new(@mock_publisher_name, [])
-      @mock_filter = Gnip::Filter.new(@mock_filter_name, true, @mock_publisher)
-
-      @server_now = Time.now.utc
-      @activities = pub_activities
+      prepare_mock_environment
     end
     
     describe "class" do
@@ -286,22 +277,6 @@ HEREDOC
           response = filter.update
           response.code.should == "200"
         end
-
-        # it 'should add a rule to the given filter' do
-        #     filter = Gnip::Filter.new('existing-filter')
-        #     rule = Gnip::Rule.new('actor', 'testActor')
-        #     setup_mock_for_add_rule(filter, rule)
-        #     response = @gnip_connection.add_rule(@mock_publisher, filter, rule)
-        #     response.code.should == "200"
-        # end
-        # 
-        # it 'should remove a rule from the given filter' do
-        #     filter = Gnip::Filter.new('existing-filter')
-        #     rule = Gnip::Rule.new('actor', 'testUid')
-        #     setup_mock_for_delete_rule(filter, rule)
-        #     response = @gnip_connection.remove_rule(@mock_publisher, filter, rule)
-        #     response.code.should == "200"
-        # end
 
         it "should delete a filter for given filter" do
           filter = Gnip::Filter.new('existing-filter', true, @mock_publisher)

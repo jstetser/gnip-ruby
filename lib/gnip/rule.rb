@@ -6,7 +6,17 @@ class Gnip::Rule < Gnip::Base
     @type = type
     @value = value;
   end
-
+  
+  def self.exists?(publisher, filter, rule)
+    true if find(publisher, filter, rule)
+  end
+  
+  def self.find(publisher, filter, rule)
+    logger.info("Finding rule matching (#{rule.type}:#{rule.value}) on #{filter.class} for publisher #{publisher.name}")
+    res, data = get("/publishers/#{publisher.name}/filters/#{filter.name}/rules.xml?type=#{rule.type}&value=#{rule.value}")
+    return Gnip::Rule.from_xml(data) if res.code == "200"
+  end
+  
   def eql?(object)
     self == object
   end
