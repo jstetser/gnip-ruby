@@ -19,102 +19,6 @@ class Gnip::Connection < Gnip::Base
         @gnip_config
     end
 
-
-    # Gets the current activities for a publisher
-    # Time is the time object. If nil, then the server returns the current bucket
-    def publisher_activities_stream_xml(publisher, time = nil)
-        timestamp = time ? time.to_gnip_bucket_id : 'current'
-        logger.info("Timestamp for #{time} is #{timestamp}")
-        logger.info("Getting activities xml for #{publisher.name} at #{timestamp}")
-        get("/#{publisher.uri}/#{publisher.name}/activity/#{timestamp}.xml")
-    end
-
-    # Gets the current activities for a publisher
-    # Time is the time object. If nil, then the server returns the current bucket
-    def publisher_activities_stream(publisher, time = nil)
-        timestamp = time ? time.to_gnip_bucket_id : 'current'
-        logger.info("Timestamp for #{time} is #{timestamp}")
-        logger.info("Getting activities for #{publisher.name} at #{timestamp}")
-        response, activities_xml = get("/#{publisher.uri}/#{publisher.name}/activity/#{timestamp}.xml")
-        activities = []
-        activities = Gnip::Activity.list_from_xml(activities_xml) if response.code == '200'
-        return [response, activities]
-    end
-
-    # Gets the current activities for a filter
-    # Time is the time object. If nil, then the server returns the current bucket
-    def filter_activities_stream_xml(publisher, filter, time = nil)
-        timestamp = time ? time.to_gnip_bucket_id : 'current'
-        logger.info("Timestamp for #{time} is #{timestamp}")
-        logger.info("Getting activities xml for #{filter.name} at #{timestamp}")
-        get("/#{publisher.uri}/#{publisher.name}/#{filter.uri}/#{filter.name}/activity/#{timestamp}.xml")
-    end
-
-    # Gets the current activities for a filter
-    # Time is the time object. If nil, then the server returns the current bucket
-    def filter_activities_stream(publisher, filter, time = nil)
-        timestamp = time ? time.to_gnip_bucket_id : 'current'
-        logger.info("Timestamp for #{time} is #{timestamp}")
-        logger.info("Getting activities for #{filter.name} at #{timestamp}")
-        response, activities_xml = get("/#{publisher.uri}/#{publisher.name}/#{filter.uri}/#{filter.name}/activity/#{timestamp}.xml")
-        activities = []
-        activities = Gnip::Activity.list_from_xml(activities_xml) if response.code == '200'
-        return [response, activities]
-    end
-
-    # Gets the current notifications for a publisher
-    # Time is the time object. If nil, then the server returns the current bucket
-    def publisher_notifications_stream_xml(publisher, time = nil)
-        timestamp = time ? time.to_gnip_bucket_id : 'current'
-        logger.info("Timestamp for #{time} is #{timestamp}")
-        logger.info("Getting activities xml for #{publisher.name} at #{timestamp}")
-        get("/#{publisher.uri}/#{publisher.name}/notification/#{timestamp}.xml")
-    end
-
-    # Gets the current notifications for a publisher
-    # Time is the time object. If nil, then the server returns the current bucket
-    def publisher_notifications_stream(publisher, time = nil)
-        timestamp = time ? time.to_gnip_bucket_id : 'current'
-        logger.info("Timestamp for #{time} is #{timestamp}")
-        logger.info("Getting activities for #{publisher.name} at #{timestamp}")
-        response, activities_xml = get("/#{publisher.uri}/#{publisher.name}/notification/#{timestamp}.xml")
-        activities = []
-        activities = Gnip::Activity.list_from_xml(activities_xml) if response.code == '200'
-        return [response, activities]
-    end
-
-    # Gets the current notifications for a filter
-    # Time is the time object. If nil, then the server returns the current bucket
-    def filter_notifications_stream_xml(publisher, filter, time = nil)
-        timestamp = time ? time.to_gnip_bucket_id : 'current'
-        logger.info("Timestamp for #{time} is #{timestamp}")
-        logger.info("Getting activities xml for #{filter.name} at #{timestamp}")
-        get("/#{publisher.uri}/#{publisher.name}/#{filter.uri}/#{filter.name}/notification/#{timestamp}.xml")
-    end
-
-    # Gets the current notifications for a filter
-    # Time is the time object. If nil, then the server returns the current bucket
-    def filter_notifications_stream(publisher, filter, time = nil)
-        timestamp = time ? time.to_gnip_bucket_id : 'current'
-        logger.info("Timestamp for #{time} is #{timestamp}")
-        logger.info("Getting activities for #{filter.name} at #{timestamp}")
-        response, activities_xml = get("/#{publisher.uri}/#{publisher.name}/#{filter.uri}/#{filter.name}/notification/#{timestamp}.xml")
-        activities = []
-        activities = Gnip::Activity.list_from_xml(activities_xml) if response.code == '200'
-        return [response, activities]
-    end
-
-    def get_filter(publisher, filter_name)
-        logger.info("Getting filter #{filter_name}")
-        find_path = "/publishers/#{publisher.name}/filters/#{filter_name}.xml"
-        response, data = get(find_path)
-        filter = nil
-        if (response.code == '200')
-            filter = Gnip::Filter.from_xml(data)
-        end
-        return [response, filter]
-    end
-
     def get_publisher(publisher_name)
         logger.info("Getting publisher #{publisher_name}")
         get_path = "/publishers/#{publisher_name}.xml"
@@ -144,24 +48,9 @@ class Gnip::Connection < Gnip::Base
         return post("/#{publisher.uri}", publisher.to_xml)
     end
 
-    def create_filter(publisher, filter)
-        logger.info("Creating #{filter.class} with name #{filter.name}")
-        return post("/#{publisher.uri}/#{publisher.name}/#{filter.uri}", filter.to_xml)
-    end
-
     def update_publisher(publisher)
         logger.info("Updating #{publisher.class} with name #{publisher.name}")
         return put("/#{publisher.uri}/#{publisher.name}/#{publisher.name}.xml", publisher.to_xml)
-    end
-
-    def update_filter(publisher, filter)
-        logger.info("Creating #{filter.class} with name #{filter.name}")
-        return put("/#{publisher.uri}/#{publisher.name}/#{filter.uri}/#{filter.name}.xml", filter.to_xml)
-    end
-
-    def remove_filter(publisher, filter)
-        logger.info("Creating #{filter.class} with name #{filter.name}")
-        return delete("/#{publisher.uri}/#{publisher.name}/#{filter.uri}/#{filter.name}.xml")
     end
 
     def add_rule(publisher, filter, rule)

@@ -10,6 +10,12 @@ class Gnip::Publisher
   end
   
   ## API 
+  
+  def self.create(name, suppported_rule_types = [], connection = nil)
+    publisher = new(name, suppported_rule_types = [], connection = nil)
+    connection.logger.info("Creating #{publisher.class} with name #{publisher.name}")
+    return connection.post("/#{publisher.uri}", publisher.to_xml)
+  end
       
   # Gets the current activities for a publisher
   # Time is the time object. If nil, then the server returns the current bucket
