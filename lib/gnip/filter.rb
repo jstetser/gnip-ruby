@@ -40,17 +40,37 @@ class Gnip::Filter < Gnip::Base
     def uri
         'filters'
     end
+    
+    def prefix(publisher = self.publisher)
+      "#{publisher.prefix}/#{self.uri}/#{self.name}"
+    end
+    
+    def has_rule?(type, value)
+      @rules.include?(Gnip::Rule.new(type, value))
+    end
+    
+    def add_rules(ruleset = [])
+      unless ruleset.is_a?(Array)
+        ruleset = [ruleset]
+      end
+      logger.info("Bulk adding rules to filter named #{self.name} for publisher #{publisher.name}")
+      response = post(ruleset.first.uri(publisher, self, :extension => :xml), rules_xml(ruleset))
+      if response == true
+        ruleset.each { |r| add_rule(r.type, r.value) }
+        true
+      end
+    end
 
     def add_rule(type, value)
-        @rules << Gnip::Rule.new(type, value)
+        @rules << Gnip::Rule.new(type, value) unless has_rule?(type, value)
     end
     
     def add_rule!(type, value)
       add_rule(type, value) && update
     end
-
+    
     def remove_rule(type, value)
-        @rules.delete(Gnip::Rule.new(type, value))
+        @rules.delete(Gnip::Rule.new(type, value)) if has_rule?(type, value)
     end
     
     def remove_rule!(type, value)
@@ -94,6 +114,11 @@ class Gnip::Filter < Gnip::Base
         end
         return filter
     end
+    
+    def rules_xml(ruleset)
+      return XmlSimple.xml_out(ruleset.collect { |rule| rule.to_hash }, {'AnonymousTag' => 'rule', 'RootName' => 'rules', 'XmlDeclaration' => Gnip.header_xml})
+    end
+      
 
     def self.from_xml(document)
         hash = XmlSimple.xml_in(document)

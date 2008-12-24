@@ -87,6 +87,10 @@ def setup_mock_for_add_rule(filter, rule)
     mock_http.should_receive(:post2).with("/publishers/#{@mock_publisher_name}/filters/#{filter.name}/rules.xml", rule.to_xml, headers).and_return(successful_response)
 end
 
+def setup_mock_for_add_rules(filter, rules)
+    mock_http.should_receive(:post2).with("/publishers/#{@mock_publisher_name}/filters/#{filter.name}/rules.xml", filter.rules_xml(rules), headers).and_return(successful_response)
+end
+
 def setup_mock_for_delete_rule(filter, rule)
     mock_http.should_receive(:delete).with("/publishers/#{@mock_publisher_name}/filters/#{filter.name}/rules?type=#{rule.type}&value=#{rule.value}", headers).and_return(successful_response)
 end

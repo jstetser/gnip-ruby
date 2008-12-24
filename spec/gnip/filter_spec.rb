@@ -132,7 +132,7 @@ HEREDOC
   end
   
   it 'should have a method for removing a rule' do
-    filter = Gnip::Filter.new('existing-filter')
+    filter = Gnip::Filter.new('existing-filter', [], @mock_publisher)
     rule = Gnip::Rule.new('actor', 'testUid')
     filter.add_rule(rule.type, rule.value)
     filter.rules.size.should == 1
@@ -140,4 +140,31 @@ HEREDOC
     filter.remove_rule(rule.type, rule.value)
     filter.rules.size.should == 0
   end
+  
+  it 'should properly convert an array of rules to XML' do
+    filter = Gnip::Filter.new('existing-filter', [], @mock_publisher)
+    rules = []
+    rules << Gnip::Rule.new('actor', 'joe')
+    rules << Gnip::Rule.new('actor', 'jake')
+
+    rule_xml =  <<-HEREDOC
+<?xml version="1.0" encoding="UTF-8"?>
+<rules>
+  <rule type="actor" value="joe" />
+  <rule type="actor" value="jake" />
+</rules>
+HEREDOC
+    filter.rules_xml(rules).should == rule_xml
+  end
+  
+  it 'should have a method for adding a batch of rules' do
+    filter = Gnip::Filter.new('existing-filter', [], @mock_publisher)
+    rules = []
+    rules << Gnip::Rule.new('actor', 'joe')
+    rules << Gnip::Rule.new('actor', 'jake')
+    setup_mock_for_add_rules(filter, rules)
+    response = filter.add_rules(rules)
+    response.should == true
+    filter.rules.size.should == 2
+  end   
 end
