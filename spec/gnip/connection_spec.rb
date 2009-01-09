@@ -61,6 +61,23 @@ describe Gnip::Connection do
             Gnip::Activity.list_to_xml(activities).should == @activities
         end
 
+        it "should get current activites  for a publicly scoped publisher " do
+            setup_mock_notification_for_publisher(@activities, nil, "public")
+            @mock_publisher.scope="public"
+            response, activities = @gnip_connection.publisher_notifications_stream(@mock_publisher)
+            response.code.should == '200'
+            Gnip::Activity.list_to_xml(activities).should == @activities
+        end
+
+
+        it "should get current activites  for a gnip scoped publisher " do
+            setup_mock_notification_for_publisher(@activities, nil, "gnip")
+            @mock_publisher.scope="gnip"
+            response, activities = @gnip_connection.publisher_notifications_stream(@mock_publisher)
+            response.code.should == '200'
+            Gnip::Activity.list_to_xml(activities).should == @activities
+        end
+
         it "should get activities per filter for a given time" do
             setup_mock_notification_for_filter(@activities, @server_now)
             response, activities = @gnip_connection.filter_notifications_stream(@mock_publisher, @mock_filter, @server_now)
@@ -93,6 +110,23 @@ describe Gnip::Connection do
                 Gnip::Activity.list_to_xml(activities).should == @activities
             end
 
+            it "should get current activites  for a publicly scoped publisher " do
+                setup_mock_for_publisher(@activities, nil, "public")
+                @mock_publisher.scope="public"
+                response, activities = @gnip_connection.publisher_activities_stream(@mock_publisher)
+                response.code.should == '200'
+                Gnip::Activity.list_to_xml(activities).should == @activities
+            end
+
+
+            it "should get current activites  for a gnip scoped publisher " do
+                setup_mock_for_publisher(@activities, nil, "gnip")
+                @mock_publisher.scope="gnip"
+                response, activities = @gnip_connection.publisher_activities_stream(@mock_publisher)
+                response.code.should == '200'
+                Gnip::Activity.list_to_xml(activities).should == @activities
+            end
+
             it "should get activities per filter for a given time" do
                 setup_mock_for_filter(@activities, @server_now)
                 response, activities = @gnip_connection.filter_activities_stream(@mock_publisher, @mock_filter, @server_now)
@@ -109,6 +143,7 @@ describe Gnip::Connection do
         end
 
         describe "For Publisher" do
+
             it "should post activities as xml successfully" do
                 setup_mock_for_publishing(@activities)
                 response = @gnip_connection.publish_xml(@mock_publisher, @activities)
@@ -145,49 +180,60 @@ describe Gnip::Connection do
     end
 
     describe "Filter" do
-        it "should create a new filter for given filter xml" do
-            filter = Gnip::Filter.new('new-filter')
-            setup_mock_for_filter_create(filter)
-            response = @gnip_connection.create_filter(@mock_publisher, filter)
-            response.code.should == "200"
-        end
 
-        it "should find a filter for given name" do
-            filter_name = 'some-existing-filter'
-            setup_mock_for_filter_find(filter_name)
-            response, filter = @gnip_connection.get_filter(@mock_publisher, filter_name)
-            response.code.should == "200"
-            filter.name.should == 'some-existing-filter'
-        end
+        ['my', 'public', 'gnip'].each do |scope|
 
-        it "should update a filter for given filter" do
-            filter = Gnip::Filter.new('existing-filter')
-            setup_mock_for_filter_update(filter)
-            response = @gnip_connection.update_filter(@mock_publisher, filter)
-            response.code.should == "200"
-        end
+            it "should create a new filter for given filter xml" do
+                filter = Gnip::Filter.new('new-filter')
+                setup_mock_for_filter_create(filter, scope)
+                @mock_publisher.scope=scope
+                response = @gnip_connection.create_filter(@mock_publisher, filter)
+                response.code.should == "200"
+            end
 
-        it 'should add a rule to the given filter' do
-            filter = Gnip::Filter.new('existing-filter')
-            rule = Gnip::Rule.new('actor', 'testActor')
-            setup_mock_for_add_rule(filter, rule)
-            response = @gnip_connection.add_rule(@mock_publisher, filter, rule)
-            response.code.should == "200"
-        end
+            it "should find a filter for given name" do
+                filter_name = 'some-existing-filter'
+                setup_mock_for_filter_find(filter_name, scope)
+                @mock_publisher.scope=scope
+                response, filter = @gnip_connection.get_filter(@mock_publisher, filter_name)
+                response.code.should == "200"
+                filter.name.should == 'some-existing-filter'
+            end
 
-        it 'should remove a rule from the given filter' do
-            filter = Gnip::Filter.new('existing-filter')
-            rule = Gnip::Rule.new('actor', 'testUid')
-            setup_mock_for_delete_rule(filter, rule)
-            response = @gnip_connection.remove_rule(@mock_publisher, filter, rule)
-            response.code.should == "200"
-        end
+            it "should update a filter for given filter" do
+                filter = Gnip::Filter.new('existing-filter')
+                setup_mock_for_filter_update(filter, scope)
+                @mock_publisher.scope=scope
+                response = @gnip_connection.update_filter(@mock_publisher, filter)
+                response.code.should == "200"
+            end
 
-        it "should delete a filter for given filter" do
-            filter = Gnip::Filter.new('existing-filter')
-            setup_mock_for_filter_delete(filter)
-            response = @gnip_connection.remove_filter(@mock_publisher, filter)
-            response.code.should == "200"
+            it 'should add a rule to the given filter' do
+                filter = Gnip::Filter.new('existing-filter')
+                rule = Gnip::Rule.new('actor', 'testActor')
+                setup_mock_for_add_rule(filter, rule, scope)
+                @mock_publisher.scope=scope
+                response = @gnip_connection.add_rule(@mock_publisher, filter, rule)
+                response.code.should == "200"
+            end
+
+            it 'should remove a rule from the given filter' do
+                filter = Gnip::Filter.new('existing-filter')
+                rule = Gnip::Rule.new('actor', 'testUid')
+                setup_mock_for_delete_rule(filter, rule, scope)
+                @mock_publisher.scope=scope
+                response = @gnip_connection.remove_rule(@mock_publisher, filter, rule)
+                response.code.should == "200"
+            end
+
+            it "should delete a filter for given filter" do
+                filter = Gnip::Filter.new('existing-filter')
+                setup_mock_for_filter_delete(filter, scope)
+                @mock_publisher.scope=scope
+                response = @gnip_connection.remove_filter(@mock_publisher, filter)
+                response.code.should == "200"
+            end
+
         end
     end
 
@@ -200,12 +246,14 @@ describe Gnip::Connection do
             response.code.should == "200"
         end
 
-        it "should return a  publisher for given publisher name" do
-            publisher_name = 'existing-publsher'
-            setup_mock_for_publisher_get(publisher_name)
-            response, publisher = @gnip_connection.get_publisher(publisher_name)
-            response.code.should == "200"
-            publisher.name.should == publisher_name
+        ['my', 'public', 'gnip'].each do |scope|
+            it "should return a  publisher for given publisher name and scope" do
+                publisher_name = 'existing-publsher'
+                setup_mock_for_publisher_get(publisher_name, scope)
+                response, publisher = @gnip_connection.get_publisher(publisher_name, scope)
+                response.code.should == "200"
+                publisher.name.should == publisher_name
+            end
         end
     end
 
@@ -239,59 +287,59 @@ describe Gnip::Connection do
         response
     end
 
-    def setup_mock_for_publishers_get(expected_publishers)
+    def setup_mock_for_publishers_get(expected_publishers, expected_scope = 'my')
         mock_response = successful_response
         mock_response.should_receive(:body).with(no_args).and_return(list_to_xml(expected_publishers, 'publishers'))
-        mock_http.should_receive(:get2).with("/publishers.xml", headers).and_return(mock_response)
+        mock_http.should_receive(:get2).with("/#{expected_scope}/publishers.xml", headers).and_return(mock_response)
     end
 
-    def setup_mock_for_publisher_get(expected_publisher_name)
+    def setup_mock_for_publisher_get(expected_publisher_name, expected_scope = 'my')
         mock_response = successful_response
-        mock_response.should_receive(:body).with(no_args).and_return(Gnip::Publisher.new(expected_publisher_name).to_xml)
-        mock_http.should_receive(:get2).with("/publishers/#{expected_publisher_name}.xml", headers).and_return(mock_response)
+        mock_response.should_receive(:body).with(no_args).and_return(Gnip::Publisher.new(expected_publisher_name, [], expected_scope).to_xml)
+        mock_http.should_receive(:get2).with("/#{expected_scope}/publishers/#{expected_publisher_name}.xml", headers).and_return(mock_response)
     end
 
-    def setup_mock_for_publisher_create(expected_publisher)
-        mock_http.should_receive(:post2).with("/publishers", expected_publisher.to_xml, headers).and_return(successful_response)
+    def setup_mock_for_publisher_create(expected_publisher, expected_scope = 'my')
+        mock_http.should_receive(:post2).with("/#{expected_scope}/publishers", expected_publisher.to_xml, headers).and_return(successful_response)
     end
 
-    def setup_mock_for_filter_create(expected_filter)
-        mock_http.should_receive(:post2).with("/publishers/#{@mock_publisher_name}/filters", expected_filter.to_xml, headers).and_return(successful_response)
+    def setup_mock_for_filter_create(expected_filter, expected_scope = 'my')
+        mock_http.should_receive(:post2).with("/#{expected_scope}/publishers/#{@mock_publisher_name}/filters", expected_filter.to_xml, headers).and_return(successful_response)
     end
 
-    def setup_mock_for_add_rule(filter, rule)
-        mock_http.should_receive(:post2).with("/publishers/#{@mock_publisher_name}/filters/#{filter.name}/rules.xml", rule.to_xml, headers).and_return(successful_response)
+    def setup_mock_for_add_rule(filter, rule, expected_scope = 'my')
+        mock_http.should_receive(:post2).with("/#{expected_scope}/publishers/#{@mock_publisher_name}/filters/#{filter.name}/rules.xml", rule.to_xml, headers).and_return(successful_response)
     end
 
-    def setup_mock_for_delete_rule(filter, rule)
-        mock_http.should_receive(:delete).with("/publishers/#{@mock_publisher_name}/filters/#{filter.name}/rules?type=#{rule.type}&value=#{rule.value}", headers).and_return(successful_response)
+    def setup_mock_for_delete_rule(filter, rule, expected_scope = 'my')
+        mock_http.should_receive(:delete).with("/#{expected_scope}/publishers/#{@mock_publisher_name}/filters/#{filter.name}/rules?type=#{rule.type}&value=#{rule.value}", headers).and_return(successful_response)
     end
 
-    def setup_mock_for_filter_update(expected_filter)
-        mock_http.should_receive(:put2).with("/publishers/#{@mock_publisher_name}/filters/#{expected_filter.name}.xml", expected_filter.to_xml, headers).and_return(successful_response)
+    def setup_mock_for_filter_update(expected_filter, expected_scope = 'my')
+        mock_http.should_receive(:put2).with("/#{expected_scope}/publishers/#{@mock_publisher_name}/filters/#{expected_filter.name}.xml", expected_filter.to_xml, headers).and_return(successful_response)
     end
 
-    def setup_mock_for_filter_delete(expected_filter)
-        mock_http.should_receive(:delete).with("/publishers/#{@mock_publisher_name}/filters/#{expected_filter.name}.xml", headers).and_return(successful_response)
+    def setup_mock_for_filter_delete(expected_filter, expected_scope = 'my')
+        mock_http.should_receive(:delete).with("/#{expected_scope}/publishers/#{@mock_publisher_name}/filters/#{expected_filter.name}.xml", headers).and_return(successful_response)
     end
 
-    def setup_mock_for_filter_find(expected_filter_name)
+    def setup_mock_for_filter_find(expected_filter_name, expected_scope = 'my')
         mock_response = successful_response
         mock_response.should_receive(:body).with(no_args).and_return(Gnip::Filter.new(expected_filter_name).to_xml)
-        mock_http.should_receive(:get2).with("/publishers/#{@mock_publisher_name}/filters/#{expected_filter_name}.xml", headers).and_return(mock_response)
+        mock_http.should_receive(:get2).with("/#{expected_scope}/publishers/#{@mock_publisher_name}/filters/#{expected_filter_name}.xml", headers).and_return(mock_response)
     end
 
-    def setup_mock_for_publishing(activities_xml)
-        mock_http.should_receive(:post2).with("/publishers/#{@mock_publisher_name}/activity.xml", activities_xml, headers).and_return(successful_response)
+    def setup_mock_for_publishing(activities_xml, expected_scope = 'my')
+        mock_http.should_receive(:post2).with("/#{expected_scope}/publishers/#{@mock_publisher_name}/activity.xml", activities_xml, headers).and_return(successful_response)
     end
 
-    def setup_mock_for_publisher(activities, server_time = nil)
-        prefix_path = "/publishers/#{@mock_publisher_name}"
+    def setup_mock_for_publisher(activities, server_time = nil, expected_scope = 'my')
+        prefix_path = "/#{expected_scope}/publishers/#{@mock_publisher_name}"
         setup_mock_for_activity_get(activities, prefix_path, server_time)
     end
 
-    def setup_mock_notification_for_publisher(activities, server_time = nil)
-        prefix_path = "/publishers/#{@mock_publisher_name}"
+    def setup_mock_notification_for_publisher(activities, server_time = nil, expected_scope = 'my')
+        prefix_path = "/#{expected_scope}/publishers/#{@mock_publisher_name}"
         setup_mock_for_notification_get(activities, prefix_path, server_time)
     end
 
@@ -321,13 +369,13 @@ describe Gnip::Connection do
         mock_http.should_receive(:get2).with(path, headers).and_return(mock_response)
     end
 
-    def setup_mock_for_filter(activities, server_time = nil)
-        prefix_path = "/publishers/#{@mock_publisher_name}/filters/#{@mock_filter_name}"
+    def setup_mock_for_filter(activities, server_time = nil, expected_scope = 'my')
+        prefix_path = "/#{expected_scope}/publishers/#{@mock_publisher_name}/filters/#{@mock_filter_name}"
         setup_mock_for_activity_get(activities, prefix_path, server_time)
     end
 
-    def setup_mock_notification_for_filter(activities, server_time = nil)
-        prefix_path = "/publishers/#{@mock_publisher_name}/filters/#{@mock_filter_name}"
+    def setup_mock_notification_for_filter(activities, server_time = nil, expected_scope = 'my')
+        prefix_path = "/#{expected_scope}/publishers/#{@mock_publisher_name}/filters/#{@mock_filter_name}"
         setup_mock_for_notification_get(activities, prefix_path, server_time)
     end
 

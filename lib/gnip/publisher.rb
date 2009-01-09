@@ -1,14 +1,16 @@
 class Gnip::Publisher
   attr_reader :name
   attr_accessor :supported_rule_types
+  attr_accessor :scope
 
-  def initialize(name, suppported_rule_types = [])
+  def initialize(name, suppported_rule_types = [], scope = 'my')
     @name = name
+    @scope = scope
     @supported_rule_types = suppported_rule_types
   end
 
   def uri
-    'publishers'
+    "/#{@scope}/publishers/#{@name}"
   end
 
   def to_xml()
@@ -46,6 +48,6 @@ class Gnip::Publisher
   private
 
   def path
-    "/publishers/#{name}/activity"
+    "/my/publishers/#{name}/activity"
   end
 end
