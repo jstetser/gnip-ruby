@@ -16,7 +16,7 @@ class Gnip::Publisher < Gnip::Base
     response, data = Gnip::Base.connection.get(get_path)
     publisher = nil
     if (response.code == '200')
-      publisher = Gnip::Publisher.from_xml(data)
+      return publisher = Gnip::Publisher.from_xml(data)
     else 
       Gnip::Base.logger.info("Received error response #{response.code}")
       nil
@@ -37,11 +37,10 @@ class Gnip::Publisher < Gnip::Base
     logger.info("Updating #{self.class} with name #{self.name}")
     return put("/#{self.uri}/#{self.name}/#{self.name}.xml", self.to_xml)
   end
-      
+  
   # Gets the current activities for a publisher
   # Time is the time object. If nil, then the server returns the current bucket
-  # If a filter is given, we get the current activities for that filter
-  def activities(time = nil, filter = nil)
+  def activities_xml(time = nil, filter = nil)
     timestamp = time ? time.to_gnip_bucket_id : 'current'
     if filter
       _name, _endpoint = filter.name, "#{self.prefix}/#{filter.uri}/#{filter.name}/activity/#{timestamp}.xml"
@@ -49,7 +48,14 @@ class Gnip::Publisher < Gnip::Base
       _name, _endpoint = self.name, "#{self.prefix}/activity/#{timestamp}.xml"
     end
     log_action(_name, time, timestamp)
-    fetch_and_parse(_endpoint)
+    response, activities_xml = fetch(_endpoint)
+  end
+      
+  # Gets the current activities for a publisher
+  # Time is the time object. If nil, then the server returns the current bucket
+  # If a filter is given, we get the current activities for that filter
+  def activities(time = nil, filter = nil)
+    parse_xml(*activities_xml(time, filter))
   end
   
   alias_method :get_activities, :activities
@@ -63,7 +69,7 @@ class Gnip::Publisher < Gnip::Base
   # Gets the current activities for a publisher
   # Time is the time object. If nil, then the server returns the current bucket
   # If a filter is given, we get the current activities for that filter
-  def notifications(time = nil, filter = nil)
+  def notifications_xml(time = nil, filter = nil)
     timestamp = time ? time.to_gnip_bucket_id : 'current'
     if filter
       _name, _endpoint = filter.name, "#{self.prefix}/#{filter.uri}/#{filter.name}/notification/#{timestamp}.xml"
@@ -71,7 +77,14 @@ class Gnip::Publisher < Gnip::Base
       _name, _endpoint = self.name, "#{self.prefix}/notification/#{timestamp}.xml"
     end
     log_action(_name, time, timestamp)
-    fetch_and_parse(_endpoint)
+    response, notifications_xml = fetch(_endpoint)
+  end
+  
+  # Gets the current activities for a publisher
+  # Time is the time object. If nil, then the server returns the current bucket
+  # If a filter is given, we get the current activities for that filter
+  def notifications(time = nil, filter = nil)
+    parse_xml(*notifications_xml(time, filter))
   end
   
   alias_method :get_notifications, :notifications
@@ -84,12 +97,20 @@ class Gnip::Publisher < Gnip::Base
   
   # Publish a activity xml document to gnip for a give publisher
   # You must be the owner of the publisher to publish
-  # activity_list is an array of activity objects
-  def publish(activity_list)
+  # activities_xml is the xml stream of gnip activities
+  def publish_xml(activity_xml)
     logger.info("Publishing activities for #{self.name}")
     publisher_path = "/publishers/#{self.name}/activity.xml"
-    post(publisher_path, Gnip::Activity.list_to_xml(activity_list))
+    post(publisher_path, activity_xml)
   end
+  
+  # Publish a activity xml document to gnip for a give publisher
+  # You must be the owner of the publisher to publish
+  # activity_list is an array of activity objects
+  def publish(activity_list)
+    publish_xml(Gnip::Activity.list_to_xml(activity_list))
+  end
+  
   ####
   
   def add_filter(name, full_data = true)
@@ -157,8 +178,11 @@ class Gnip::Publisher < Gnip::Base
     logger.info("Getting activities for #{name} at #{timestamp}")
   end
   
-  def fetch_and_parse(endpoint)
+  def fetch(endpoint)
     response, activities_xml = get(endpoint)
+  end
+  
+  def parse_xml(response, activities_xml)
     activities = []
     activities = Gnip::Activity.list_from_xml(activities_xml) if response.code == '200'
     return [response, activities]

@@ -19,6 +19,68 @@ class Gnip::Connection < Gnip::Base
     def config
         @gnip_config
     end
+    
+    #Publish a activity xml document to gnip for a give publisher
+    #You must be the owner of the publisher to publish
+    #activities_xml is the xml stream of gnip activities
+    def publish_xml(publisher, activity_xml)
+      publisher.publish_xml(activity_xml)
+    end
+
+    #Publish a activity xml document to gnip for a give publisher
+    #You must be the owner of the publisher to publish
+    #activity_list is an array of activity objects
+    def publish(publisher, activity_list)
+      publisher.publish(activity_list)
+    end
+
+    # Gets the current activities for a publisher
+    # Time is the time object. If nil, then the server returns the current bucket
+    def publisher_activities_stream_xml(publisher, time = nil)
+      publisher.activities_xml(time)
+    end
+
+    # Gets the current activities for a publisher
+    # Time is the time object. If nil, then the server returns the current bucket
+    def publisher_activities_stream(publisher, time = nil)
+      publisher.activities(time)
+    end
+
+    # Gets the current activities for a filter
+    # Time is the time object. If nil, then the server returns the current bucket
+    def filter_activities_stream_xml(publisher, filter, time = nil)
+      publisher.activities_xml(time, filter)
+    end
+
+    # Gets the current activities for a filter
+    # Time is the time object. If nil, then the server returns the current bucket
+    def filter_activities_stream(publisher, filter, time = nil)
+      publisher.activities(time, filter)
+    end
+
+    # Gets the current notifications for a publisher
+    # Time is the time object. If nil, then the server returns the current bucket
+    def publisher_notifications_stream_xml(publisher, time = nil)
+      publisher.notifications_xml(time)
+    end
+
+    # Gets the current notifications for a publisher
+    # Time is the time object. If nil, then the server returns the current bucket
+    def publisher_notifications_stream(publisher, time = nil)
+      publisher.notifications(time)
+    end
+
+    # Gets the current notifications for a filter
+    # Time is the time object. If nil, then the server returns the current bucket
+    def filter_notifications_stream_xml(publisher, filter, time = nil)
+      publisher.notifications_xml(time, filter)
+    end
+
+    # Gets the current notifications for a filter
+    # Time is the time object. If nil, then the server returns the current bucket
+    def filter_notifications_stream(publisher, filter, time = nil)
+      publisher.notifications(time, filter)
+    end
 
     def get_publisher(publisher_name)
       Gnip::Publisher.find(publisher_name, self)
@@ -42,15 +104,29 @@ class Gnip::Connection < Gnip::Base
     def update_publisher(publisher)
       publisher.update
     end
+    
+    def get_filter(publisher, filter_name)
+      Gnip::Filter.find(publisher, filter_name)
+    end
+
+    def create_filter(publisher, filter)
+      filter.update
+    end
+
+    def update_filter(publisher, filter)
+      filter.update
+    end
+
+    def remove_filter(publisher, filter)
+      filter.destroy
+    end
 
     def add_rule(publisher, filter, rule)
-        logger.info("Adding rule #{rule.value} to filter #{filter.name}")
-        return post("/#{publisher.uri}/#{publisher.name}/filters/#{filter.name}/rules.xml", rule.to_xml)
+      filter.add_rules(rule)
     end
 
     def remove_rule(publisher, filter, rule)
-        logger.info("Removing rule #{rule.value} from filter #{filter.name}")
-        return delete("/#{publisher.uri}/#{publisher.name}/filters/#{filter.name}/rules?type=#{CGI.escape(rule.type)}&value=#{CGI.escape(rule.value)}") if rule
+      filter.remove_rule!(rule.type, rule.value)
     end
 
     private
