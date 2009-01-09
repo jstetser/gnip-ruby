@@ -253,6 +253,7 @@ describe Gnip::Connection do
                 response, publisher = @gnip_connection.get_publisher(publisher_name, scope)
                 response.code.should == "200"
                 publisher.name.should == publisher_name
+                publisher.scope.should == scope
             end
         end
     end

@@ -139,7 +139,7 @@ class Gnip::Connection < Gnip::Base
         response, data = get(get_path)
         publisher = nil
         if (response.code == '200')
-            publisher = Gnip::Publisher.from_xml(data)
+            publisher = Gnip::Publisher.from_xml(data, publisher_scope)
         else 
             logger.info("Received error response #{response.code}")
         end

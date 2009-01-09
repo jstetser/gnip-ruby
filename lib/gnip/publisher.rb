@@ -29,7 +29,7 @@ class Gnip::Publisher
   end
   alias :eql? :==
 
-  def self.from_hash(hash)       
+  def self.from_hash(hash, scope = 'my')
       found_rule_types = []
       rule_types = hash['supportedRuleTypes']
         if rule_types
@@ -37,12 +37,12 @@ class Gnip::Publisher
                 found_rule_types << Gnip::RuleType.from_hash(rule_type_hash['type'].first)
             end
         end
-    return Gnip::Publisher.new(hash['name'], found_rule_types)
+    return Gnip::Publisher.new(hash['name'], found_rule_types, scope)
   end
 
-  def self.from_xml(document)
+  def self.from_xml(document, scope = 'my')
     hash = XmlSimple.xml_in(document)
-    return self.from_hash(hash)
+    return self.from_hash(hash, scope)
   end
 
   private
