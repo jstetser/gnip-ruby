@@ -62,39 +62,25 @@ class Gnip
     end
 
     def get(path)
-        logger.debug('Doing GET')
-        response = http.get2(path, headers)
-        if (response.code == '200')
-            if (response['Content-Encoding'] == 'gzip')
-                logger.debug("Uncompressing the GET response")
-                data = uncompress(response.body)
-            else
-                data = response.body
-            end
-        end
-        logger.debug("GET result: #{data}")
-        return [response, data]
+      connection.get(path)
     end
     
     def self.get(path); Gnip::Base.new().get(path); end
 
     def post(path, data)
-        logger.debug("POSTing data: #{data}")
-        return http.post2(path, compress(data), headers)
+      connection.post(path, data)
     end
     
     def self.post(path, data); Gnip::Base.new().post(path, data); end
 
     def put(path, data)
-        logger.debug("PUTing data: #{data}")
-        return http.put2(path, compress(data), headers)
+      connection.put(path, data)
     end
     
     def self.put(path, data); Gnip::Base.new().put(path, data); end
 
     def delete(path)
-        logger.debug("Doing DELETE : #{path}")
-        return http.delete(path, headers)
+      connection.delete(path)
     end
     
     def self.delete(path); Gnip::Base.new().delete(path); end
