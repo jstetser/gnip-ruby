@@ -80,8 +80,7 @@ class Gnip
 
     def post(path, data)
         logger.debug("POSTing data: #{data}")
-        response = http.post2(path, compress(data), headers)
-        return response.code == '200'
+        return http.post2(path, compress(data), headers)
     end
     
     def self.post(path, data); Gnip::Base.new().post(path, data); end

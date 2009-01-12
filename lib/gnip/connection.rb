@@ -82,13 +82,13 @@ class Gnip::Connection < Gnip::Base
       publisher.notifications(time, filter)
     end
 
-    def get_publisher(publisher_name)
-      Gnip::Publisher.find(publisher_name, self)
+    def get_publisher(publisher_name, scope = 'my')
+      Gnip::Publisher.find(publisher_name, scope)
     end
 
     def get_publishers()
         logger.info('Getting publisher list')
-        get_path = '/publishers.xml'
+        get_path = '/my/publishers.xml'
         response, data = get(get_path)
         publishers = []
         if (response.code == '200')
@@ -102,7 +102,7 @@ class Gnip::Connection < Gnip::Base
     end
 
     def update_publisher(publisher)
-      publisher.update
+      publisher.update(publisher)
     end
     
     def get_filter(publisher, filter_name)
@@ -110,23 +110,58 @@ class Gnip::Connection < Gnip::Base
     end
 
     def create_filter(publisher, filter)
-      filter.update
+      Gnip::Filter.create(filter.name, filter.full_data, publisher)
     end
 
     def update_filter(publisher, filter)
-      filter.update
+      filter.update(publisher)
     end
 
     def remove_filter(publisher, filter)
-      filter.destroy
+      filter.destroy(publisher)
     end
 
     def add_rule(publisher, filter, rule)
-      filter.add_rules(rule)
+      filter.add_rules(rule, publisher)
     end
 
     def remove_rule(publisher, filter, rule)
-      filter.remove_rule!(rule.type, rule.value)
+      filter.remove_rule!(rule.type, rule.value, publisher)
+    end
+
+    def head(path)
+        logger.debug('Doing HEAD')
+        return http.get(path, headers)
+    end
+
+    def get(path)
+        logger.debug('Doing GET')
+        response = http.get2(path, headers)
+        if (response.code == '200')
+            if (response['Content-Encoding'] == 'gzip')
+                logger.debug("Uncompressing the GET response")
+                data = uncompress(response.body)
+            else
+                data = response.body
+            end
+        end
+        logger.debug("GET result: #{data}")
+        return [response, data]
+    end
+
+    def post(path, data)
+        logger.debug("POSTing data: #{data}")
+        return http.post2(path, compress(data), headers)
+    end
+
+    def put(path, data)
+        logger.debug("PUTing data: #{data}")
+        return http.put2(path, compress(data), headers)
+    end
+
+    def delete(path)
+        logger.debug("Doing DELETE : #{path}")
+        return http.delete(path, headers)
     end
 
     private

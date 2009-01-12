@@ -1,41 +1,45 @@
 class Gnip::Publisher < Gnip::Base
   attr_reader :name, :filters
   attr_accessor :supported_rule_types
+  attr_accessor :scope
 
-  def initialize(name, suppported_rule_types = [])
+  def initialize(name, suppported_rule_types = [], scope = 'my')
     @name = name
+    @scope = scope
     @supported_rule_types = suppported_rule_types
     @filters = {}
   end
   
   ## API 
   
-  def self.find(publisher_name)
+  def self.find(publisher_name, scope = 'my')
     Gnip::Base.logger.info("Getting publisher #{publisher_name}")
-    get_path = "/publishers/#{publisher_name}.xml"
+    get_path = "/#{scope}/publishers/#{publisher_name}.xml"
     response, data = Gnip::Base.connection.get(get_path)
     publisher = nil
     if (response.code == '200')
-      return publisher = Gnip::Publisher.from_xml(data)
+      publisher = Gnip::Publisher.from_xml(data)
+      publisher.scope = scope
+      return publisher
     else 
       Gnip::Base.logger.info("Received error response #{response.code}")
       nil
     end
   end
   
-  def self.create(name, suppported_rule_types = [])
-    publisher = new(name, suppported_rule_types)
+  def self.create(name, suppported_rule_types = [], scope = 'my')
+    publisher = new(name, suppported_rule_types, scope)
     publisher.create
   end
   
   def create
     logger.info("Creating #{self.class} with name #{self.name}")
-    return self if post("/#{self.uri}", self.to_xml)
+    return self if post("/#{@scope}/publishers", self.to_xml)
   end
   
   def update
     logger.info("Updating #{self.class} with name #{self.name}")
-    return put("/#{self.uri}/#{self.name}/#{self.name}.xml", self.to_xml)
+    return put("#{self.uri}/#{self.name}.xml", self.to_xml)
   end
   
   # Gets the current activities for a publisher
@@ -43,9 +47,9 @@ class Gnip::Publisher < Gnip::Base
   def activities_xml(time = nil, filter = nil)
     timestamp = time ? time.to_gnip_bucket_id : 'current'
     if filter
-      _name, _endpoint = filter.name, "#{self.prefix}/#{filter.uri}/#{filter.name}/activity/#{timestamp}.xml"
+      _name, _endpoint = filter.name, "#{self.uri}/#{filter.path}/activity/#{timestamp}.xml"
     else
-      _name, _endpoint = self.name, "#{self.prefix}/activity/#{timestamp}.xml"
+      _name, _endpoint = self.name, "#{self.uri}/activity/#{timestamp}.xml"
     end
     log_action(_name, time, timestamp)
     response, activities_xml = fetch(_endpoint)
@@ -72,9 +76,9 @@ class Gnip::Publisher < Gnip::Base
   def notifications_xml(time = nil, filter = nil)
     timestamp = time ? time.to_gnip_bucket_id : 'current'
     if filter
-      _name, _endpoint = filter.name, "#{self.prefix}/#{filter.uri}/#{filter.name}/notification/#{timestamp}.xml"
+      _name, _endpoint = filter.name, "#{self.uri}/#{filter.path}/notification/#{timestamp}.xml"
     else
-      _name, _endpoint = self.name, "#{self.prefix}/notification/#{timestamp}.xml"
+      _name, _endpoint = self.name, "#{self.uri}/notification/#{timestamp}.xml"
     end
     log_action(_name, time, timestamp)
     response, notifications_xml = fetch(_endpoint)
@@ -100,7 +104,7 @@ class Gnip::Publisher < Gnip::Base
   # activities_xml is the xml stream of gnip activities
   def publish_xml(activity_xml)
     logger.info("Publishing activities for #{self.name}")
-    publisher_path = "/publishers/#{self.name}/activity.xml"
+    publisher_path = "#{self.uri}/activity.xml"
     post(publisher_path, activity_xml)
   end
   
@@ -127,7 +131,7 @@ class Gnip::Publisher < Gnip::Base
   end
   
   def uri
-    'publishers'
+    "/#{@scope}/publishers/#{@name}"
   end
 
   def prefix
@@ -140,7 +144,7 @@ class Gnip::Publisher < Gnip::Base
 
   def to_hash()
     result = {}
-    result['name'] = @name
+    result['name'] = self.name
     result['supportedRuleTypes'] = @supported_rule_types.collect { |type| type.to_hash}
     { 'publisher' => result }
   end
@@ -150,7 +154,7 @@ class Gnip::Publisher < Gnip::Base
   end
   alias :eql? :==
 
-  def self.from_hash(hash)       
+  def self.from_hash(hash, scope = 'my')
       found_rule_types = []
       rule_types = hash['supportedRuleTypes']
         if rule_types
@@ -158,19 +162,19 @@ class Gnip::Publisher < Gnip::Base
                 found_rule_types << Gnip::RuleType.from_hash(rule_type_hash['type'].first)
             end
         end
-    return Gnip::Publisher.new(hash['name'], found_rule_types)
+    return Gnip::Publisher.new(hash['name'], found_rule_types, scope)
   end
 
-  def self.from_xml(document)
+  def self.from_xml(document, scope = 'my')
     hash = XmlSimple.xml_in(document)
-    return self.from_hash(hash)
+    return self.from_hash(hash, scope)
   end
 
   private
 
 
   def path
-    "/publishers/#{name}/activity"
+    "/my/publishers/#{name}/activity"
   end
   
   def log_action(name, time, timestamp)

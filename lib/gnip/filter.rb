@@ -12,7 +12,7 @@ class Gnip::Filter < Gnip::Base
     
     def self.find(publisher, filter_name)
       logger.info("Getting filter #{filter_name}")
-      find_path = "/publishers/#{publisher.name}/filters/#{filter_name}.xml"
+      find_path = "/#{publisher.scope}/publishers/#{publisher.name}/filters/#{filter_name}.xml"
       response, data = self.new(filter_name).get(find_path)
       filter = nil
       if (response.code == '200')
@@ -24,41 +24,48 @@ class Gnip::Filter < Gnip::Base
     def self.create(name, full_data = true, publisher = nil)
       filter = new(name, full_data, publisher)
       logger.info("Creating #{filter.class} with name #{filter.name}")
-      return filter.post("#{publisher.prefix}/#{filter.uri}", filter.to_xml)
+      return filter.post("#{publisher.uri}/#{filter.uri}", filter.to_xml)
     end
     
-    def update
+    def update(publisher = self.publisher)
       logger.info("Creating #{self.class} with name #{self.name}")
-      return put("/#{self.publisher.uri}/#{self.publisher.name}/#{self.uri}/#{self.name}.xml", self.to_xml)
+      return put("#{publisher.uri}/#{self.uri}/#{self.name}.xml", self.to_xml)
     end
     
-    def destroy
+    def destroy(publisher = self.publisher)
       logger.info("Removing #{self.class} with name #{self.name}")
-      return delete("/#{self.publisher.uri}/#{self.publisher.name}/#{self.uri}/#{self.name}.xml")
+      return delete("#{publisher.uri}/#{self.uri}/#{self.name}.xml")
     end
 
     def uri
         'filters'
     end
     
+    def path
+      "#{self.uri}/#{self.name}"
+    end
+    
     def prefix(publisher = self.publisher)
-      "#{publisher.prefix}/#{self.uri}/#{self.name}"
+      "#{publisher.uri}/#{self.uri}/#{self.name}"
     end
     
     def has_rule?(type, value)
       @rules.include?(Gnip::Rule.new(type, value))
     end
     
-    def add_rules(ruleset = [])
+    def add_rules(ruleset = [], publisher = self.publisher)
       unless ruleset.is_a?(Array)
+        logger.info("Adding Rule (#{ruleset.type}:#{ruleset.value}) to filter named #{self.name} for publisher #{publisher.name}")
+        response = post(ruleset.uri(publisher, self, :extension => :xml), ruleset.to_xml)
         ruleset = [ruleset]
+      else
+        logger.info("Bulk adding rules to filter named #{self.name} for publisher #{publisher.name}")
+        response = post(ruleset.first.uri(publisher, self, :extension => :xml), rules_xml(ruleset))
       end
-      logger.info("Bulk adding rules to filter named #{self.name} for publisher #{publisher.name}")
-      response = post(ruleset.first.uri(publisher, self, :extension => :xml), rules_xml(ruleset))
-      if response == true
+      if response.code == '200'
         ruleset.each { |r| add_rule(r.type, r.value) }
-        true
       end
+      return response
     end
 
     def add_rule(type, value)
@@ -73,8 +80,10 @@ class Gnip::Filter < Gnip::Base
         @rules.delete(Gnip::Rule.new(type, value)) if has_rule?(type, value)
     end
     
-    def remove_rule!(type, value)
-      remove_rule(type, value) && update
+    def remove_rule!(type, value, publisher = self.publisher)
+      remove_rule(type, value)
+      rule = Gnip::Rule.new(type, value)
+      return delete(rule.uri(publisher, self, :specific => true))
     end
 
     def to_xml()

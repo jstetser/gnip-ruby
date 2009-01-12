@@ -36,7 +36,7 @@ class Gnip::Rule < Gnip::Base
     result
   end
   
-  def self.to_params
+  def to_params
     "?type=#{self.type}&value=#{self.value}"
   end
 

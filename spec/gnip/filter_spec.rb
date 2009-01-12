@@ -164,7 +164,7 @@ HEREDOC
     rules << Gnip::Rule.new('actor', 'jake')
     setup_mock_for_add_rules(filter, rules)
     response = filter.add_rules(rules)
-    response.should == true
+    response.code.should == '200'
     filter.rules.size.should == 2
   end   
 end

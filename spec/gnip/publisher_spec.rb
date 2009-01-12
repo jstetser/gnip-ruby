@@ -248,7 +248,7 @@ HEREDOC
           activity_list << Gnip::Activity.new("jane", "added_application", now, "def456")
           setup_mock_for_publishing(pub_activities_at(now))
           response = @mock_publisher.publish(activity_list)
-          response.should == true
+          response.code.should == "200"
         end
       end
     
@@ -257,7 +257,7 @@ HEREDOC
             filter = Gnip::Filter.new('new-filter', true, @mock_publisher)
             setup_mock_for_filter_create(filter)
             response = @mock_publisher.add_filter('new-filter', true)
-            response.should == true
+            response.code.should == "200"
         end
 
         it "should find a filter for given name" do
