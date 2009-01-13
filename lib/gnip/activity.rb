@@ -1,6 +1,15 @@
 class Gnip::Activity
-
-  attr_reader :actor, :at, :url, :action, :tos, :regardingURL, :source, :tags, :payload
+  include AttrBuilder
+  
+  # Create accessors & builders for the listed attributes... can be used as such:
+  # g = Gnip::Activity.new(...)
+  # g.set_actor("you").set_to("me").set_tags(%w(one two three))
+  # g.actor
+  # => "you"
+  # 
+  attr_builder :actor, :url, :tos, :to, :tags, :regardingURL, :source, :payload
+  
+  attr_reader :at, :action
 
   def initialize(actor, action, at = Time.now, url = nil, tos = [], regardingURL = nil, source = nil, tags = [], payload = nil)
     @actor = actor

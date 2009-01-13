@@ -8,7 +8,9 @@ require 'time'
 require 'logger'
 require 'cgi'
 require 'pathname'
+require 'pp'
 require Pathname(__FILE__).dirname + 'ext/time'
+require Pathname(__FILE__).dirname + 'ext/attr_builder'
 
 class Gnip
   class << self
@@ -133,4 +135,3 @@ class Gnip
     require file
   end
 end
-
